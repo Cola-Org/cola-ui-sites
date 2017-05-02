@@ -1,0 +1,132 @@
+@import "../less/.global.less";
+
+.main-wrapper {
+	//background-color: #324057;
+	background-color: @darkPrimaryColor;
+	height: 600px;
+	&:before {
+		content: "";
+		background-image: url(../resources/images/line.png);
+		background-size: 1920px auto;
+		.transition(0.6s linear);
+		.transition-property(background-image);
+		overflow: hidden;
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		//opacity: 0.7;
+	}
+
+	.page-header {
+		position: absolute;
+		width: 100%;
+	}
+	.banner {
+		height: ~"calc(100% - 200px)";
+		display: table;
+		position: absolute;
+		top: 100px;
+		width: 100%;
+		.content {
+			display: table-cell;
+			vertical-align: middle;
+			text-align: center;
+			h1 {
+				font-size: 52px;
+				color: #fff;
+			}
+			p {
+				font-size: 20px;
+				color: rgb(229, 229, 229);
+			}
+			.ui.button {
+				color: #fff;
+				font-size: 20px;
+				border-radius: 26px;
+				width: 168px;
+				padding: 0.65em 1.5em 0.65em;;
+				&.start {
+					background-color: #ee5463;
+					margin-right: 24px;
+				}
+				&.download {
+					background-color: #35a088;
+					margin-right: 0px;
+				}
+			}
+
+			color: #fff;
+		}
+	}
+	position: relative;
+}
+
+@media only screen and (max-width: @small-width) {
+	.main-wrapper {
+		height: 460px;
+		.page-header {
+			.transition(height 0.2s ease-out);
+			text-align: center;
+			height: 160px;
+			padding: 40px 0 0 0;
+			top:40px;
+			.logo {
+				padding: 0px;
+				>img{
+					//height: 100%;
+				}
+				float: inherit;
+				//background: url(../resources/images/cola-logo.png) 0px 0px no-repeat;
+				//background-size: auto 40px;
+				width: 160px;
+				height: @pageHeaderHeight/2;
+			}
+			.navigator {
+				float: inherit;
+				> .item {
+
+					cursor: auto;
+
+					text-align: center;
+					padding: 0 8px;
+					height: @pageHeaderHeight/2;
+
+					span {
+						line-height: @pageHeaderHeight/2;
+					}
+
+					&:hover {
+						color: @primaryColor;
+					}
+					line-height: @pageHeaderHeight/2;
+
+					&.active {
+						.box-shadow(inset 0px -3px 0px 0px @primaryColor);
+					}
+				}
+			}
+		}
+
+		.banner {
+			top:200px;
+			text-align: center;
+			.content {
+				display: inline-block;
+				padding: 10px 0;
+				h1 {
+					font-size: 32px;
+				}
+				p {
+					font-size: 14px;
+				}
+				> div {
+					padding: 8px 0;
+					.ui.button {
+						width: auto;
+						font-size: 14px;
+					}
+				}
+			}
+		}
+	}
+}

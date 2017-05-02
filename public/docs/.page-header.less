@@ -1,0 +1,151 @@
+@import "../less/.global.less";
+
+@pageHeaderHeight: 80px;
+@pageHeaderBackgroundColor: @primaryColor;
+@appNameFontColor: #fff;
+@appNameFontSize: 1.4em;
+@pageHeaderTopMenuItemBackgroundColor: @darkPrimaryColor;
+@appMsgIconColor: @invertedFontColor;
+@appMsgBadgeMailItemBackgroundColor: #2f886e;
+@appMsgBadgeTaskItemBackgroundColor: @secondaryColor;
+@appMsgIconSize: 20px;
+
+@smallHeaderHeight: 52px;
+.page-header {
+	.box-shadow(0 0 1px #9ab3d5);
+	position: relative;
+	height: @pageHeaderHeight;
+	background-color: @darkPrimaryColor;
+	&:before {
+		position: absolute;
+		width: 100%;
+		left: 0px;
+		right: 0px;
+		height: 100%;
+		content: "";
+		background-image: url(../resources/images/line.png);
+		background-size: 1920px auto;
+	}
+	.transition(height 0.2s ease-out);
+	margin-bottom: 24px;
+	.content {
+		position: absolute;
+		width: 100%;
+		left: 0px;
+		right: 0px;
+
+		.logo {
+			float: left;
+			padding: 20px 0;
+			> img {
+				height: 40px;
+			}
+			display: inline-block;
+			height: @pageHeaderHeight;
+			width: 200px;
+		}
+		height: @pageHeaderHeight;
+
+		padding: 0 48px;
+
+
+		> .search {
+			display: inline-block;
+			padding-top: 20px;
+			padding-right: 100px;
+			padding-left: 20px;
+			> .ui.input > input {
+				border-radius: 20px;
+				background: #f3f6f7;
+			}
+		}
+
+		.navigator {
+			float: right;
+			> .item {
+				text-decoration: none;
+				cursor: auto;
+				text-align: center;
+				padding: 0 20px;
+				color: #fff;
+				height: @pageHeaderHeight;
+				display: inline-block;
+				span {
+					line-height: @pageHeaderHeight;
+				}
+				line-height: @pageHeaderHeight;
+
+				&.active {
+					.box-shadow(inset 0px -3px 0px 0px #fff);
+				}
+			}
+		}
+	}
+}
+
+#searchPopup.ui.popup {
+	padding: 0;
+}
+
+.component-list {
+	padding: 0;
+	ul {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		overflow: auto;
+		list-style: none;
+		background-color: #f3f5f6;
+		li {
+			padding: 0 12px;
+			background-color: #fff;
+			cursor: pointer;
+			color: @fontColor;
+			&:hover {
+				background-color: fade(@primaryColor, 0.1);
+				color: @primaryColor;
+
+			}
+			span {
+				line-height: 3em;
+				&.label {
+					float: right;
+				}
+			}
+			margin-bottom: 1px;
+		}
+	}
+}
+
+@media only screen and (max-width: @small-width) {
+	.page-header {
+		margin-bottom: 12px;
+		height: @smallHeaderHeight;
+		.content {
+			.logo, > .search {
+				display: none !important;
+			}
+			height: @smallHeaderHeight;
+			padding: 0;
+			.navigator {
+				color: #fff;
+				width: 100%;
+				> .item {
+					height: @smallHeaderHeight;
+					line-height: @smallHeaderHeight;
+					> span {
+						color: #fff;
+						line-height: @smallHeaderHeight;
+					}
+					&.active {
+						.box-shadow(inset 0px -3px 0px 0px #fff);
+					}
+					padding: 0;
+					width: 20%;
+				}
+			}
+		}
+
+	}
+}

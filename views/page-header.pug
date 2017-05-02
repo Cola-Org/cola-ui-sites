@@ -1,0 +1,23 @@
+.page-header
+	.content
+		a.logo(href="/")
+			img(src="/resources/images/cola-logo.png")
+		.search
+			c-input#searchComponent(icon="search" placeholder="搜索组件..." postOnInput="true" change="searchChange")
+			#searchPopup.component-list.ui.fluid.popup.bottom.left.transition.hidden(style="width:400px; height:210px")
+				ul
+					li(c-repeat="component in components" c-display="component.target" c-onclick="open(component)")
+						span.name(c-bind="component.name")
+						span.label(c-bind="component.label")
+
+		.navigator
+			a.item(href="/guide" c-class="active:module=='guide'")
+				span 指南
+			a.item(href="/docs")
+				span API
+			a.item(href="/docs" c-class="active:module=='docs'")
+				span 组件
+			a.item(href="/docs")
+				span 框架
+			a.item(href="/docs")
+				span 演示

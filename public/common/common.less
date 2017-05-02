@@ -1,0 +1,86 @@
+@import "../less/.global.less";
+@import "./.icon-animation.less";
+@import "./.iconfont.less";
+
+#contentFrameContainer {
+	height: 100%;
+	background: #e9ebec;
+	overflow: hidden;
+
+	#contentFrame {
+		height: 100%;
+		background-color: #fff;
+	}
+}
+
+#breadcrumb {
+	line-height: 2.5em;
+	padding-left: 1em;
+	> a {
+		color: rgba(65, 64, 65, 0.87);
+	}
+}
+
+.example {
+	margin: 2em 0;
+	&:not(:last-of-type) {
+		border-bottom: 1px solid #d2d4d5;
+	}
+}
+
+@catalogLineHeight: 36px;
+
+catalog {
+	display: block;
+	width: 100%;
+	ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		a {
+			color: @fontColor;
+			line-height: @catalogLineHeight;
+			display: block;
+			padding-left: 28px;
+			position: relative;
+			white-space: nowrap;
+			i.icon {
+				float: right;
+				.transition(transform 0.2s ease-out);
+				margin: 0 !important;
+				line-height: @catalogLineHeight;
+				height: @catalogLineHeight;
+				width: @catalogLineHeight;
+				display: inline-block;
+				position: absolute;
+				right: 0;
+				top:0;
+			}
+			cursor: pointer;
+		}
+		> li {
+			.transition(height 0.2s ease-out);
+
+			&.active {
+				> ul {
+					display: block;
+				}
+
+				> a > i {
+					.transform(rotate(90deg));
+				}
+			}
+			> ul {
+				display: none;
+				> li > a {
+					padding: 0 0 0 48px;
+				}
+			}
+		}
+		a:hover, a.active {
+			color: @primaryColor;
+			.box-shadow(inset -3px 0px 0px 0px @primaryColor);
+			background-color: fade(@primaryColor, 8);
+		}
+	}
+}

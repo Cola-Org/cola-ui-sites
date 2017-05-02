@@ -1,0 +1,175 @@
+@import "../less/.global.less";
+
+@menuWidth: 180px;
+.main-wrapper {
+	min-height: 680px;
+	position: relative;
+	box-sizing: border-box;
+	border-radius: 4px;
+	background-color: #fff;
+	padding: 24px 0 0;
+	.box-shadow(0 0 1px rgba(154, 179, 213, 0.31));
+
+	.divider {
+		position: absolute;
+		left: 20%;
+		width: 1px;
+		top: 24px;
+		bottom: 0px;
+		background-color: @borderColor;
+	}
+	&:after, &:before {
+		display: table;
+		content: "";
+	}
+	&:after {
+		clear: both;
+	}
+	margin: 0 48px;
+
+	.menu-container {
+		overflow-x: hidden;
+		box-sizing: border-box;
+		width: 20%;
+		float: left;
+		padding-bottom: 48px;
+
+	}
+
+	.articles-content {
+		width: 80%;
+		position: relative;
+		padding-bottom: 100px;
+		box-sizing: border-box;
+		float: left;
+		> .content {
+			.links {
+
+			}
+			> .api-link {
+				position: absolute;
+				right: 6%;
+				width: 80px;
+				font-size: 36px;
+				padding-right: 12px;
+				text-align: right;
+				top: 0;
+				line-height: 36px;
+				cursor: pointer;
+				&:hover {
+					color: fade(@primaryColor, 80);
+				}
+			}
+			padding: 0 6% 20px 4%;
+		}
+
+		.example {
+			.example-control {
+				font-size: 13px;
+				text-align: center;
+				> * {
+					opacity: 0.5;
+				}
+				cursor: pointer;
+				line-height: 36px;
+				color: @fontColor;
+				border-top: 1px dashed @borderColor;
+				&:hover {
+					> * {
+						opacity: 0.8;
+					}
+				}
+
+				.visible {
+					display: inline-block;
+				}
+				.hidden {
+					display: none;
+				}
+			}
+
+			&.source-visible {
+				> pre {
+					display: block;
+				}
+				.example-control {
+					border-top: 1px solid @borderColor;
+					.visible {
+						display: none;
+					}
+					.hidden {
+						display: inline-block;
+					}
+
+				}
+			}
+			> .code {
+				padding: 18px;
+			}
+			border: 1px solid @borderColor;
+			> pre {
+				border-top: 1px solid @borderColor;
+				margin: 0;
+				display: none;
+			}
+
+		}
+
+	}
+
+	> .doc-navigator {
+		border-top: 1px solid @borderColor;
+		position: absolute;
+		left: 20%;
+		bottom: 0px;
+		right: 0px;
+		padding: 0 16px;
+
+		> div {
+			width: 50%;
+			display: inline-block;
+			padding: 20px 0;
+			&.next-nav {
+				text-align: right;
+			}
+			> a {
+				line-height: 36px;
+				display: inline-block;
+				color: @primaryColor;
+				cursor: pointer;
+
+			}
+
+			&:hover {
+				a {
+					color: @lightPrimaryColor;
+				}
+			}
+		}
+	}
+}
+
+@media only screen and (max-width: @small-width) {
+	.main-wrapper {
+		margin: 0 8px;
+		.menu-container {
+			display: none;
+		}
+		.articles-content {
+			width: 100%;
+			> .content {
+				padding: 0 4% 20px 4%;
+			}
+		}
+		.divider {
+			display: none;
+		}
+		> .doc-navigator {
+			left: 0;
+		}
+	}
+}
+
+#menuSidebar {
+	background-color: #fff;
+}

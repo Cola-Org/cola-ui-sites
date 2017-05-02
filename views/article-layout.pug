@@ -1,0 +1,56 @@
+extends .cola-page-pc
+append head
+	link(rel="stylesheet", type="text/css", href="./docs/index.css")
+block body
+	include page-header
+
+	.main-wrapper
+		.menu-container
+			mixin _makeArticles(menus)
+				ul
+					each category in menus
+						li
+							a(href=category.path class=category.path ? "link" : "")
+								span=category.label
+								if category.path
+								else
+									i.icon.angle.right
+							if category.menus
+								+_makeArticles(category.menus)
+
+			catalog
+				+_makeArticles(articles)
+		.divider
+		.articles-content
+			.content
+				a.api-link(c-display="router.current.api" c-href="router.current.api")
+					i.icon-frame-api2
+				block article
+		.doc-navigator
+			.prev-nav
+				a(c-display="router.previous" c-href="router.previous.path")
+					i.icon.angle.left
+					span(c-bind="router.previous.text")
+			.next-nav
+				a(c-display="router.next" c-href="router.next.path")
+					span(c-bind="router.next.text")
+					i.icon.angle.right
+	include page-footer
+	#toggleMenuButton(c-onclick="showSidebar()" )
+		i.icon.content
+
+	c-sidebar#menuSidebar(size="100%" modalOpacity="0.1")
+		.menubar
+			c-toolbar
+				.item.back-button(c-onclick="hideSidebar()")
+					i.icon.angle.left
+				.item.search-input
+					c-input.inverted.transparent.secondary(width="100%" icon="search" placeholder="搜索控件" postOnInput="true" change="searchChange")
+		.component-list
+			ul
+				li(c-repeat="component in components" c-display="component.target" c-onclick="open(component)")
+					span.name(c-bind="component.name")
+					span.label(c-bind="component.label")
+
+
+

@@ -1,0 +1,50 @@
+@import "../less/.global.less";
+
+.feature {
+	//height: 400px;
+	padding: 60px 0;
+	text-align: center;
+	> ul {
+		margin: 0 auto;
+		max-width: 1280px;
+		min-height: 200px;
+		> li {
+			padding: 20px;
+			> div {
+				border: 1px solid @borderColor;
+				min-height: 400px;
+				padding: 40px 0;
+				background-color: #fff;
+				.img {
+					padding: 0 20px;
+					img {
+						width: 132px;
+					}
+				}
+				h3 {
+					//color: #5e6d82;
+				}
+				p {
+					padding: 0 25px;
+				}
+			}
+
+		}
+	}
+}
+
+@media only screen and (max-width: @small-width) {
+	.feature {
+
+		padding:10px 0;
+		text-align: center;
+		> ul {
+
+			> li {
+				padding: 8px;
+
+
+			}
+		}
+	}
+}

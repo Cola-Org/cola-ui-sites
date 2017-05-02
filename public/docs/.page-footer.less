@@ -1,0 +1,87 @@
+@import "../less/.global.less";
+
+.page-footer {
+	//height: 120px;
+	background-color: #324057;
+	margin-top: 24px;
+	padding: 28px 48px;
+	color: #a4aebd;
+	.footer-main {
+		display: inline-block;
+		width: 50%;
+		> p {
+			line-height: 1;
+			font-size: 22px;
+			margin: 0;
+			color: #a4aebd;
+		}
+
+		> .link {
+			display: inline-block;
+			margin: 6px 18px 0 0;
+			line-height: 1;
+			font-size: 12px;
+			color: #768193;
+		}
+	}
+
+	.attention {
+		display: inline-block;
+		width: 50%;
+		text-align: right;
+		.item {
+			padding: 0 12px;
+			i {
+				font-size: 36px;
+				line-height: 1em;
+			}
+			div, a {
+				font-size: 12px;
+				color: #768193;
+			}
+			color: #768193;
+			text-align: center;
+			display: inline-block;
+			cursor: pointer;
+
+			&:hover {
+				color: rgba(255, 255, 255, 0.9);
+			}
+
+		}
+	}
+
+}
+
+.copyright {
+	background-color: #293548;
+	height: 40px;
+	> p {
+		line-height: 40px;
+		text-align: center;
+	}
+}
+
+#qqPopup {
+	.ui.segment {
+		padding: 4px;
+		strong {
+			padding-bottom: 12px;
+		}
+		img {
+			margin-bottom: 12px;
+			border-radius: 4px;
+			width: 140px;
+		}
+		text-align: center;
+	}
+}
+
+@media only screen and (max-width: @small-width) {
+
+	.page-footer {
+		padding: 28px 18px;
+	}
+}
+
+

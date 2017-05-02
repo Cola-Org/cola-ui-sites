@@ -1,0 +1,26 @@
+@import "../less/.global.less";
+
+.markdown-content {
+	h1, h2, h3 {
+		font-weight: 400;
+		color: #1f2f3d;
+	}
+	&, & > p {
+		line-height: 1.75em;
+		color: rgba(65, 64, 65, 0.87)
+	}
+	pre > .prettyprint {
+		display: block;
+		ol.linenums {
+			color: rgba(102, 128, 153, 0.4);
+		}
+	}
+	code {
+		background-color: #D6DBDF;
+		border-radius: 4px;
+		color: #2C3E50;
+		font-size: 90%;
+		padding: 2px 4px;
+		white-space: nowrap;
+	}
+}

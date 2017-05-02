@@ -1,0 +1,24 @@
+@import "../less/.global.less";
+@import "./.page-header.less";
+@import "./.main-wrapper.less";
+@import "./.feature.less";
+@import "./.page-footer.less";
+
+html body {
+	background-color: #f3f5f6;
+	font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, SimSun, sans-serif;
+	overflow: auto;
+	font-weight: 400;
+	-webkit-font-smoothing: antialiased;
+
+	h1, h2, h3 {
+		color: #1f2f3d;
+		font-weight: 400;
+	}
+	p {
+		color: @fontColor;
+	}
+	messages, message {
+		display: block;
+	}
+}

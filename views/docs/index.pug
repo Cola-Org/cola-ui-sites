@@ -1,0 +1,27 @@
+extends ../.cola-page-pc
+append head
+	link(rel="stylesheet", type="text/css", href="./docs/index.css")
+block body
+	include ../page-header
+
+	.main-wrapper
+		.menu-container
+			.bar(c-onclick="toggleSidebar()")
+				i.iconfont.icon-sidebar
+			c-tree#menuTree
+		.articles-content
+			.content
+				block article
+			.doc-navigator
+				.prev-nav
+					a(c-display="router.previous" c-href="router.previous.path")
+						i.icon.angle.left
+						span(c-bind="router.previous.text")
+				.next-nav
+					a(c-display="router.next" c-href="router.next.path")
+						span(c-bind="router.next.text")
+						i.icon.angle.right
+	include ../page-footer
+
+
+

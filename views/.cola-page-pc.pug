@@ -1,0 +1,33 @@
+extends .cola-page
+
+append head
+	link(rel="stylesheet", type="text/css", href="./resources/nprogress/nprogress.css")
+	script(src="./resources/nprogress/nprogress.js")
+	script(src="./resources/jsbeautify.js")
+	link(rel="stylesheet" type="text/css" href="./resources/prettify/themes/tomorrow.css")
+	script(src="./resources/prettify/prettify.js")
+	script().
+		(function () {
+			var oldColaRootFn = cola._rootFunc;
+			cola._rootFunc = function () {
+				if (arguments.length === 2 && typeof arguments[0] === "string" && typeof arguments[1] === "function") {
+
+					var name = arguments[0], fn = arguments[1];
+					var targetContainer = $(".example[name='" + name + "']");
+
+					targetContainer.attr("c-ignore", "");
+					var targetDoms = targetContainer.find(">.code");
+					if (targetDoms.length) {
+						oldColaRootFn(name, targetDoms[0], fn);
+						return;
+					} else {
+						throw new cola.Exception("\".example[name='" + name + "']\" not exists.");
+					}
+				}
+				return oldColaRootFn.apply(this, arguments);
+			};
+
+		}).call(this);
+
+
+append scripts

@@ -1,0 +1,30 @@
+extends ../article-layout
+append head
+	link(rel="stylesheet" type="text/css" href="docs/form-layout.css")
+
+block article
+	article
+		h1  表单布局
+		p 常用的表单布局主要定义列数和横向跨列
+		.example(name="tag")
+
+			.code
+				form-layout
+					fields.cols-2
+						field
+						field
+					fields.cols-4
+						field.cols-2
+						field
+						field
+					fields.cols-4
+						field
+						field
+						field
+						field
+					fields.cols-6
+						field
+						field.cols-3
+						field
+						field
+

@@ -1,0 +1,42 @@
+extends .cola-page-pc
+append head
+	link(rel="stylesheet", type="text/css", href="./home/index.css")
+block body
+	.main-wrapper
+		include page-header
+		.banner
+			.content
+				h1 简单易学，开箱即用
+				p 一站式，满足前端开发的大部分框架需求
+				div
+					a.ui.button.start(href="/docs") 快速入门
+					a.ui.button.download(href="/download") 下载最新
+	.feature
+		ul.small-block-grid-1.medium-block-grid-2.large-block-grid-4
+			li
+				div
+					.img
+						img(src="./resources/images/feature/module.png")
+					h3 模型驱动
+					p 继承自Dorado的优点，模型驱动开发，前端与Server端模型保持一致
+
+			li
+				div
+					.img
+						img(src="./resources/images/feature/component.png")
+					h3 丰富组件
+					p 丰富的布局和交互控件，满足大部分页面需求
+			li
+				div
+					.img
+						img(src="./resources/images/feature/framework.png")
+					h3 原厂框架
+					p 面向移动设备的Single Page Application应用框架+面向桌面系统的前端主框架
+			li
+				div
+					.img
+						img(src="./resources/images/feature/system.png")
+					h3 管理系统
+					p 更适合MIS管理系统的开发（双向数据绑定。不依赖脏数据检查、性能更有保障。数据的元定义。数据类型、格式转化、校验、懒装载）
+
+	include page-footer

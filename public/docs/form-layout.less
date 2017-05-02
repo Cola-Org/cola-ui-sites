@@ -1,0 +1,19 @@
+@import "../less/.global.less";
+
+@layoutBlockBackgroundColor: lighten(@primaryColor, 12%);
+@layoutBlockBorder: 1px solid rgba(255, 255, 255, 0.42);
+.example {
+	form-layout {
+		> fields {
+			> field {
+				height: 60px;
+				background-color: @layoutBlockBackgroundColor;
+				border-right: @layoutBlockBorder;
+				border-bottom: @layoutBlockBorder;
+				&:last-of-type {
+					border-right: none;
+				}
+			}
+		}
+	}
+}

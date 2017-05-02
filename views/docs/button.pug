@@ -1,0 +1,24 @@
+extends ../article-layout
+
+block article
+	article
+		h1 按钮控件
+		p 常用的操作按钮
+		.example(name="event")
+			.code
+				c-button 默认
+				c-button.basic Basic
+				c-button.primary 主要的
+				c-button.secondary 次要的
+			script(type="text/javascript" name="event").
+				cola("event", function (model) {
+					model.action({});
+				});
+		:marked
+			# 定义
+			此段代码将符合后续所有控件的定义模式。cola-ui 提供了更加简单的定义方式，HTML5新特性中支持了用户自定节点，cola-ui充分利用此特性让控件定义变的更加便捷。
+			<iframe width="100%" height="200" src="//jsfiddle.net/AlexTong/jymdjukd/embedded/html,js,result/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+
+			# 事件绑定
+			事件绑定有两种写法
+			<iframe width="100%" height="200" src="//jsfiddle.net/AlexTong/q29bertz/embedded/html,js,result/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
