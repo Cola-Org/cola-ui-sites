@@ -30,7 +30,7 @@ Cola-UI依赖jQuery和Semantic-UI，因此我们需要在html中引入jQuery和S
 除此之外，Cola-UI还会使用少量的其他第三方js库，他们被打包成了一个3rd.js。
 
 
-```
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -101,3 +101,5 @@ Action是Cola中专门用于封装业务逻辑的方法，其详细说明请参�
 
 在上例中我们定义了两个控件，c-input和c-button。
 可以注意到在c-input和c-button我们通常可以使用"c-"开通的DOM指令，利用这种方式在控件与数据模型之间建立双向的数据绑定。
+
+

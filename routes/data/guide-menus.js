@@ -4,7 +4,7 @@ module.exports = [
 		path: "/guide/quick-start"
 	},
 	{
-		label: "Model(视图模型)",
+		label: "Model (视图模型)",
 		path: "/guide/model"
 	},
 	{
@@ -18,5 +18,17 @@ module.exports = [
 	{
 		label: "DOM指令",
 		path: "/guide/dom-directives"
+	},
+	{
+		label: "Element (基本对象)",
+		path: "/guide/element"
+	},
+	{
+		label: "Action (动作)",
+		path: "/guide/action"
+	},
+	{
+		label: "COSON (JSON-HTML)",
+		path: "/guide/coson"
 	}
 ];

@@ -30,15 +30,15 @@
     用于控制一个dom是否可见。此指令相当于style.display的快捷方式。
     
 * ### c-class
-    用于管理一组className是否要被添加到指定的dom节点上。
-    
-    例如： `<div c-class="hot:product.isHot; new:product.isNew"></div>` 表示如果product.isHot为true则添加hot到class中，如果product.isNew为true则添加new到class中。
-    
-* ### c-classname
-    用于直接设置dom的class属性。
+    此指令有两种使用方法：
+    * 方法一，直接设置className。
+        例如 `<div c-class="cls"></div>` 表示从一个名为cls的数据项中取出值，作为这个DIV的className。
+    * 方法二，利用一个逻辑值来确定是否要将某个className添加到目标节点上，此处可以定义多组。
+        例如： `<div c-class="hot:product.isHot; new:product.isNew"></div>` 表示如果product.isHot为true则添加hot到className中，如果product.isNew为true则添加new到className中。
     
 * ### c-on*
-    事件绑定。当一个指令是以c-on开始的，那么Cola-UI会把后面的字符串试做事件名并完成一个DOM事件的绑定
+    事件绑定。当一个指令是以c-on开始的，那么Cola-UI会把后面的字符串试做事件名并完成一个DOM事件的绑定。
+    
     例如： `<button c-onclick="showMessage()">Show</button>`
     
 * ### c-*
@@ -65,7 +65,7 @@
     
     例如：`<div c-watch="onItemRender on item.price" c-bind="item.price"></div>`，在本例中每当item.price的值发生变化时，Cola都会自动触发名为onItemRender的Action。
     onItemRender的定义方法大致如下
-    ```
+    ```javascript
     model.action({
     	onItemRender: function(dom, model) {
     		... ...
@@ -77,13 +77,27 @@
     
     为c-watch定义数据路径时可以使用逗号隔开定义多个路径，也可以使用通配符来监听更多的属性或子对象。例如：`item.*`表示监听item对象中的每一个子属性的值变化；`item.**`表示监听item对象包括其中子对象中的所有属性值的变化。
     
+* ### c-config
+    此指令用于为一个Cola-UI的控件指定一组基于JSON的属性配置。
+    
+    例如： `<c-button c-config="baseButton">保存</c-button>` 表示为这个Button引入一段名为baseButton的配置，这段配置是在Javascript中通过如下的命令定义的...
+    ```javascript
+    model.widgetConfig({
+        baseButton: {
+            width: 80,
+            class: "my-button"
+        }
+    });
+    ```  
+    这样一来，所有引入baseButton这段配置的Button都拥有width和class这两个基本的属性值设置。
+    
 * ### {{...}}
-    {{...}}是一种嵌入式的绑定表达式，如果你了解AngularJS那么你一定不会陌生。它的用法大致如下：
-    `<div>Hello {{name}}</div>`这表示{{name}}这段内容会与Model中的name建立双向的数据绑定，实时的体现数值的变化。
+    `{{...}}`是一种嵌入式的绑定表达式，如果你了解AngularJS那么你一定不会陌生。它的用法大致如下：
+    `<div>Hello {{name}}</div>`这表示`{{name}}`这段内容会与Model中的name建立双向的数据绑定，实时的体现数值的变化。
     
     这种用法看起来非常简洁且易于使用，但是我们并不推荐这种用法。这也正是我们把它放在最后来介绍的原因。
     
-    {{name}}不同于c-开通的DOM指令，他是真正的HTML内容，会被浏览器识别和渲染。这意味着在Cola-UI开始渲染之前，浏览器会把抢先把{{name}}渲染到视图中，等到Cola-UI执行渲染时它得内容再被替换成最终的值。这不可能仅仅会影响到页面的渲染性能，更重要的是这可能会导致页面的展现效果变差，用户可能在那一瞬间看到网页的内容由{{name}}切换成最终值。
+    `{{name}}`不同于c-开通的DOM指令，他是真正的HTML内容，会被浏览器识别和渲染。这意味着在Cola-UI开始渲染之前，浏览器会把抢先把`{{name}}`渲染到视图中，等到Cola-UI执行渲染时它得内容再被替换成最终的值。这不可能仅仅会影响到页面的渲染性能，更重要的是这可能会导致页面的展现效果变差，用户可能在那一瞬间看到网页的内容由`{{name}}`切换成最终值。
     
-    {{...}}这种用法其实是完全可以被其他方法替代，例如上面的例子可以被替换成这种形式：`<div>Hello <span c-bind="name"></span></div>`。
+    `{{...}}`这种用法其实是完全可以被其他方法替代，例如上面的例子可以被替换成这种形式：`<div>Hello <span c-bind="name"></span></div>`。
 

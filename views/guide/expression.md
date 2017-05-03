@@ -2,7 +2,12 @@
 
 * **数据路径**
 例如：`account.name`表示绑定到Model中名为account的对象的name属性上。
+
 另一个示例：`employees.name`，此处的employees是一个集合，其中有若干个employee对象。如果我们将一个Input绑定到employees.name，把Input将总是显示employees集合中当前employee的name。
+
+如果希望利用表达式单的得到employees中的当前employee，而不是整个employees集合。我们可以利用这样的表达式 `employees#`，这里的`#`表示取出employees中的当前对象。
+
+所以对于前面`employees.name`的示例，我们也可以把它写成`employees#.name`。他们是等效的，但是后者拥有更加准确的语义表达。
 
 * **方法调用**
 例如：`remove(person)` 调用Model中名为remove的Action，Action通常是一个Function，同时将person指向的数据作为参数传递给该方法。
@@ -27,7 +32,7 @@ Cola的双向绑定功能为我们提供的很大的开发便利性，然而我�
 知道这个表达式在该数据项完成数据装载之后的一次尝试中获得了真正的数据，此时表达式才算是完成了有效的求值，之后这个表达式将会失效，不再响应数据模型中的任何数据变化。
 
 定义静态绑定表达式的方法非常简单，只要在原有的表达式前面添加一个"="就可以了。例如：
-```
+```html
 <div c-bind="=product.title"></div>
 ```
 
@@ -38,7 +43,7 @@ Cola内部在实现双向数据绑定时会根据表达式的内容分析该表�
 
 对于包含方法调用的表达式而言，这种分析就不能确保完全准确了。例如`calcAge(person.birthday)`，Cola会认为它的结果只跟person.birthday相关，这种分析在大多数情况下是准确的，但去不是绝对的。例如下面这种情况...
 
-```
+```html
 <script type="text/javascript">
 	cola(function(model) {
 		... ...
@@ -74,7 +79,7 @@ Cola内部在实现双向数据绑定时会根据表达式的内容分析该表�
 `person.*`表示getPersonInfo()的结果可能与person中的所有子属性的值相关。
 
 如果getPersonInfo()的代码变成下面这样...
-```
+```javascript
 model.action({
 	getPersonInfo: function() {
 		var person = model.get("person");
@@ -86,7 +91,7 @@ model.action({
 此时我们可以将表达式写成`getPersonInfo() on person.**`。这表示getPersonInfo()的返回结果与person中任意一级的子属性的变化相关。
 
 让我们把问题进一步复杂化一些，看看下面这个例子...
-```
+```javascript
 model.action({
 	stat: function () {
 		var done = 0, total = 0;
