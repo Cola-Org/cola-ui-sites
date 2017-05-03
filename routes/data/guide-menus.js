@@ -1,15 +1,19 @@
 module.exports = [
 	{
-		label: "如何开始",
+		label: "快速入门",
 		path: "/guide/quick-start"
 	},
 	{
-		label: "Model(试图模型)",
+		label: "Model(视图模型)",
 		path: "/guide/model"
 	},
 	{
 		label: "数据相关概念",
 		path: "/guide/data-model"
+	},
+	{
+		label: "表达式",
+		path: "/guide/expression"
 	},
 	{
 		label: "DOM指令",
