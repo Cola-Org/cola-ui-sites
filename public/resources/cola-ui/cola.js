@@ -9693,6 +9693,9 @@
     if ((path != null ? path.charCodeAt(0) : void 0) === 33) {
       path = path.substring(1);
     }
+    if (path.indexOf("?") >= 0) {
+      path = path.substring(0, path.indexOf("?"));
+    }
     return trimPath(path);
   };
 
@@ -14143,7 +14146,7 @@ Template
       return Separator.__super__.constructor.apply(this, arguments);
     }
 
-    Separator.tagName = "c-separator";
+    Separator.tagName = "separator";
 
     Separator.parentWidget = cola.ButtonGroup;
 
@@ -14185,6 +14188,8 @@ Template
     return Separator;
 
   })(cola.Widget);
+
+  cola.registerWidget(cola.buttonGroup.Separator);
 
   cola.buttonGroup.emptyItems = [];
 
@@ -14436,7 +14441,7 @@ Template
 
   cola.registerType("button-group", "_default", cola.Button);
 
-  cola.registerType("button-group", "Separator", cola.buttonGroup.Separator);
+  cola.registerType("button-group", "separator", cola.buttonGroup.Separator);
 
   cola.registerTypeResolver("button-group", function(config) {
     return cola.resolveType("widget", config);

@@ -2,13 +2,8 @@ extends ../article-layout
 
 block article
 	article
-		:marked
-			# 输入框控件
-			常用可输入性控件
-			# 定义
-			此段代码将符合后续所有控件的定义模式。cola-ui 提供了更加简单的定义方式，HTML5新特性中支持了用户自定节点，cola-ui充分利用此特性让控件定义变的更加便捷。
-			<iframe width="100%" height="200" src="//jsfiddle.net/AlexTong/jymdjukd/embedded/html,js,result/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
-
-			# 事件绑定
-			事件绑定有两种写法
-			<iframe width="100%" height="200" src="//jsfiddle.net/AlexTong/q29bertz/embedded/html,js,result/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+		h1 Input 输入框
+		p 通过鼠标或键盘输入字符
+		.example
+			.code
+				c-input(placeholder="请输入内容...")

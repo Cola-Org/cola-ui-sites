@@ -1,0 +1,41 @@
+extends ../article-layout
+
+block article
+	article
+		h1 ButtonGroup 按钮组控件
+		p 此控件可以描述为是按钮的布局辅助。
+		.example
+			.code
+				c-buttongroup
+					c-button 添加
+					c-button 修改
+					c-button 删除
+					c-button 保存
+	article
+		h3 带分割内容的按钮组
+		.example
+			.code
+				c-buttongroup
+					c-button.primary 保存
+					separator(text="或")
+					c-button 取消
+	article
+		h3 纵向按钮组
+		p 按钮控件常用事件有initDom,refreshDom,click,dbclick等，更多事件请查阅API文档
+		.example(name="event")
+			.code
+				c-buttongroup.vertical
+					c-button 添加
+					c-button 修改
+					c-button 删除
+					c-button 保存
+
+	article
+		h3 图标按钮组
+		p 按钮的图标默认支持Semantic-UI Icon 库中所有图标。
+		.example
+			.code
+				c-buttongroup.icon
+					c-button(icon="play")
+					c-button(icon="pause")
+					c-button(icon="shuffle")

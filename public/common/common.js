@@ -77,14 +77,14 @@
 			}
 		}
 	});
-
-	$(".markdown-content pre>code").each(function (index, el) {
+	
+	$(".md-content pre>code").each(function (index, el) {
 		var code;
 		code = $(el).text();
 		return $(el).parent().addClass("prettyprint lang-html c-ignore").text(code);
 	});
 
-	$(".markdown-content>pre.code").each(function (index, el) {
+	$(".md-content>pre.code").each(function (index, el) {
 		var code;
 		code = html_beautify($(el).html(), jsBeautifyOptions);
 		return $(el).addClass("prettyprint").text(code);

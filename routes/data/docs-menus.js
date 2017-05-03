@@ -1,9 +1,7 @@
 module.exports = [
-
 	{
 		label: "快速入门",
 		menus: [
-
 			{
 				label: "单表数据维护",
 				path: "/docs/crud"
@@ -53,6 +51,13 @@ module.exports = [
 				name: "button",
 				api: "cola.Button.html",
 				path: "/docs/button"
+			},
+			{
+				icon: "icon-component-button-group",
+				label: "按钮组",
+				name: "button",
+				api: "cola.ButtonGroup.html",
+				path: "/docs/button-group"
 			},
 			{
 				icon: "icon-component-input",
@@ -220,6 +225,12 @@ module.exports = [
 				label: "工具条",
 				api: "cola.Toolbar.html",
 				path: "/docs/toolbar"
+			},{
+				icon: "icon-component-divider",
+				name: "Divider",
+				label: "滑动分割面板",
+				api: "cola.Divider.html",
+				path: "/docs/divider"
 			}
 		]
 	},

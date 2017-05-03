@@ -2,23 +2,48 @@ extends ../article-layout
 
 block article
 	article
-		h1 按钮控件
-		p 常用的操作按钮
-		.example(name="event")
+		h1 Button 按钮
+		p 常用的操作按钮，Cola-UI按钮在原有Dom按钮之上做了事件和属性的扩展。
+		p 此段代码将符合后续所有控件的定义模式。cola-ui 提供了更加简单的定义方式，HTML5新特性中支持了用户自定节点，cola-ui充分利用此特性让控件定义变的更加便捷。
+		.example
 			.code
 				c-button 默认
 				c-button.basic Basic
 				c-button.primary 主要的
 				c-button.secondary 次要的
+	article
+		h3 事件绑定
+		p 按钮控件常用事件有initDom,refreshDom,click,dbclick等，更多事件请查阅API文档
+		.example(name="event")
+			.code
+				c-button(click="hello") click me!
 			script(type="text/javascript" name="event").
 				cola("event", function (model) {
-					model.action({});
+					model.action({
+						hello: function (self, arg) {
+							alert("Hello Cola!")
+						}
+					});
 				});
-		:marked
-			# 定义
-			此段代码将符合后续所有控件的定义模式。cola-ui 提供了更加简单的定义方式，HTML5新特性中支持了用户自定节点，cola-ui充分利用此特性让控件定义变的更加便捷。
-			<iframe width="100%" height="200" src="//jsfiddle.net/AlexTong/jymdjukd/embedded/html,js,result/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
-
-			# 事件绑定
-			事件绑定有两种写法
-			<iframe width="100%" height="200" src="//jsfiddle.net/AlexTong/q29bertz/embedded/html,js,result/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+	article
+		h3 禁用按钮
+		p 在页面交互过程中，经常出现部分按钮禁止用户操作的状态。
+		.example
+			.code
+				c-button(disabled="true") 已被禁用
+	article
+		h3 图标
+		p 按钮的图标默认支持Semantic-UI Icon 库中所有图标。
+		.example
+			.code
+				c-button(icon="save" caption="保存")
+	article
+		h3 图标按钮
+		p 与普通按钮不同在于<code>class:icon</code> 可以获得正方形的图标按钮.按钮的图标默认支持Semantic-UI Icon 库中所有图标。
+		.example
+			.code
+				c-button.icon(icon="save")
+	article
+		h3 按钮状态
+		p 按钮除了disabled 提供<code>loading,active</code>
+		script(async src="//jsrun.net/vnkKp/embed/all/light/")

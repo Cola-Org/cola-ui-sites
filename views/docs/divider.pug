@@ -1,0 +1,43 @@
+extends ../article-layout
+
+block article
+	article
+		h4.ui.header 标准
+		.example
+			.code
+				c-divider
+
+	article
+		h4.ui.header 纵向分割线
+		.example
+			.code
+				c-divider(direction="vertical" content="或")
+
+	article
+		h4.ui.header 横向分割线
+		.example
+			.code
+				c-divider(direction="horizontal" content="分割线")
+	article
+		h4.ui.header 贴合模式
+		.example
+			.code
+				p Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec odio. Quisque volutpat mattis eros. Nullam malesuada erat ut turpis. Suspendisse urna nibh, viverra non, semper suscipit, posuere a, pede.
+				c-divider(class="fitted")
+				p Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec odio. Quisque volutpat mattis eros. Nullam malesuada erat ut turpis. Suspendisse urna nibh, viverra non, semper suscipit, posuere a, pede.
+
+	article
+		h4.ui.header 隐藏
+		.example
+			.code
+				h3.ui.header Section One
+				c-divider(class="hidden")
+				h3.ui.header Section Two
+	article
+		h4.ui.header Clearing
+		p 在左右两侧不允许浮动元素,与css中object.style.clean="both" 效果一致
+		.example
+			.code
+				h2.ui.right.floated.header Floated Content
+				c-divider(class="clearing")
+				h3.ui.header
