@@ -1,7 +1,7 @@
-const express = require('express');
-const router = express.Router();
+var express = require('express');
+var router = express.Router();
 
-router.get('/menus/:moduleName', (req, res, next) => {
+router.get('/menus/:moduleName', function(req, res, next)  {
 	res.send(require("./data/" + req.params.moduleName + "-menus"));
 });
 

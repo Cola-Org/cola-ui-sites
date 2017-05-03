@@ -22,6 +22,7 @@ App.open = function (path, paths) {
 			{icon: "iconfont icon-zhishiwenda", label: "问答", path: "https://github.com/Cola-Org/cola-ui/issues"},
 			{icon: "iconfont icon-iconfontcolor60", label: "在线演示", path: "http://demo.cola-ui.com"}
 		]);
+
 		var appName = App.prop("app.name");
 		if (appName) {
 			$("#appHeader").append($.xCreate({
@@ -87,7 +88,6 @@ App.open = function (path, paths) {
 			});
 			cola.widget("breadcrumb").set("sections", paths.reverse());
 		}
-
 
 		model.widgetConfig({
 			subMenuTree: {
