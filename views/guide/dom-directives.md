@@ -18,7 +18,7 @@
     例如： `father.father as grandFather`
     
 * ### c-html
-    类似于c-bind，但不会对其中的HTML标记做转义处理。且不能处理`<input>`、`<select>`等元素。
+    类似于c-bind，但不会对其中的HTML标记做转义处理。
     
 * ### c-style
     用于绑定dom的style属性，其中可以支持一组绑定表达式。

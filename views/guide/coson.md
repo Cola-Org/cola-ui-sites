@@ -164,9 +164,9 @@ $.xCreate({
 
 ### jQuery扩展
 为了方便搭配jQuery使用，Cola-UI利用cola.xCreate()扩展了jQuery并提供了如下接新的方法:
-	* $().xAppend()	-	jQuery扩展，根据JSON创建DOM元素并添加到当前jQuery包装的DOM中。
-	* $().xInsertBefore()	-	jQuery扩展，根据JSON创建DOM元素并添加到当前jQuery包装的DOM之前。
-	* $().xInsertAfter()	-	jQuery扩展，根据JSON创建DOM元素并添加到当前jQuery包装的DOM之后。
+	* $( ).xAppend()	-	jQuery扩展，根据JSON创建DOM元素并添加到当前jQuery包装的DOM中。
+	* $( ).xInsertBefore()	-	jQuery扩展，根据JSON创建DOM元素并添加到当前jQuery包装的DOM之前。
+	* $( ).xInsertAfter()	-	jQuery扩展，根据JSON创建DOM元素并添加到当前jQuery包装的DOM之后。
 
 ## cola.xRender
 cola.xRender()主要用于动态的对页面进行局部渲染。其支持很多种传入参数。
@@ -179,15 +179,11 @@ cola.xCreate()只负责创建DOM元素，并不对这些元素进行解析，而
 以下的代码将会创建一个button，它看起来与cola.xCreate并没有什么差别。
 ```javascript
 cola(function (model) {
-	model.action({
-		run: function() {
-			var fragment = cola.xRender({
-            	tagName: "button"
-            	content: "测试按钮"
-        }, model);
-			$(document.body).append(fragment);
-		}
-	});
+    var fragment = cola.xRender({
+        tagName: "button"
+        content: "测试按钮"
+    }, model);
+    $(document.body).append(fragment);
 });
 ```
 
