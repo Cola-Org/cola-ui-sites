@@ -28,12 +28,12 @@ Cola默认使用Entity和EntityList来封装JSON数据。当我们把复杂的JS
 
 ## Entity（数据实体）
 Entity的结构类似于一个Map，其中可以有若干个属性。这个特征和Model很像，事实上Model内部正是通过一个Entity来管理数据的，所以我们在这里介绍的Entity的get和set方法的各种特性同样适用于Model的get和set方法。我们可以通过get和set方法来读写一个Entity中的属性值。例如：
-```
+```javascript
 person.get("name");
 person.set("age", 23);
 ```
 Entity的属性值也可以是复杂的数据类型，例如：
-```
+```javascript
 account.set("address", {
 	city: "Shanghai",
 	street: "Dongfang road",
@@ -41,19 +41,19 @@ account.set("address", {
 });
 ```
 根据之前的描述，Cola遇到JSON类型的数值时会自动转换成Entity，因此当我们再次从account中读取address时将会得到一个Entity对象的实例。
-```
+```javascript
 var address = account.get("address");
 alert(address.get("city"));
 ```
 Entity的get和set方法都支持迭代式的属性读取和写入，例如：
-```
+```javascript
 var city = account.get("address.city");
 account.set("address.city", "beijing");
 ```
 无论address的值目前是Entity类型还是JSON对象，上面的读写操作都可以成功的执行，Cola会自动根据每一级上对象的类型完成不同方式的数据钻取。
 
 Entity属性也可以被批量的设置。例如：
-```
+```javascript
 address.set({
 	city: "Beijing",
 	street: "Zhichun Road",
@@ -66,7 +66,7 @@ Entity除了实现上述较基本的数据管理之外还可以实现对属性�
 EntityList是Entity的集合，相对于数组它提供了更加方便高效的插入、删除，新增了当前Entity的概念，提供了数据分页和数据懒加载的功能。
 
 例如当我们要迭代EntityList中的所有Entity时，代码可以是这样的：
-```
+```javascript
 employees.each(function(employee) {
 	... ...
 });
@@ -75,7 +75,7 @@ EntityList的更多用法请参考API文档。
 
 ## EntityDataType（实体数据类型）
 model.EntityDataType是专门用于描述Entity的DataType。例如我们可以用这样的一段声明来描述person这种数据实体...
-```
+```javascript
 model.describe("person", {
 	dataType: {
 		properties:{
@@ -105,7 +105,7 @@ model.describe("person", {
 Cola会自动根据此处dataType对应的那段JSON创建一个EntityDataType实例，该DataType可以限定person实体中各属性的显示名称、数据类型、校验规则等等。
 
 我们也可以利用EntityDataType来定义属性的数据懒装载，例如在下面的例子中指定了Category的products属性是一个支持数据懒装载的属性，同时还用一段子JSON还声明了products中每一个数据实体的DataType。
-```
+```javascript
 model.describe("categories", {
 	properties:{
 		id: {
@@ -141,7 +141,7 @@ model.describe("categories", {
 });
 ```
 下面的例子定义一个递归的树状结构，我们在定义DataType时为其声明了name属性，例如指定name为"Category"。之后我们就可以在其他地方通过"Category"这个名称来引用这个DataType了。例如此例中我们在categories属性中引用了"Category"，那就相当于又引用了自身。
-```
+```javascript
 model.describe("categories", {
 	name: "Category",
 	properties:{
@@ -163,7 +163,7 @@ model.describe("categories", {
 });
 ```
 也可以预先利用Model.dataType()声明好DataType，再到cola.data()中使用，就像下面的这个例子...
-```
+```javascript
 model.dataType([
 	{
 		name: "Product",
@@ -209,13 +209,13 @@ model.describe("categories", "Category");
 Provider是用于为数据模型提供数据的，通常是用于声明让Model自动从Server端通过Ajax装载数据。
 
 如果我们把一个Provider作为数据设置到Model或Entity中，或者利用describe为某个数据项声明好了Provider。那么当我们之后尝试从Model和Entity中读取这项数据时，Cola会自动调用该Provider尝试获得最终的数据。例如:
-```
+```javascript
 model.describe("employees", {
 	provider: "data/employees.json"
 });
 ```
 或
-```
+```javascript
 model.set("employees", new cola.Provider({
 	url: "data/employees.json"
 }));
@@ -224,14 +224,14 @@ model.set("employees", new cola.Provider({
 以上的第一段代码演示的是一种极简的Provider的定义方法，如果只需要定义一个Provider的url，那么就可以直接通过一个代表url的字符串来定义。但事实上Provider还支持更多的属性和设置，如果有需要我们还可以通过JSON配置对象的醒来来定义的Provider。
 
 下面的代码将触发Model从Server端装载数据
-```
+```javascript
 model.get("employees", function(employees) {
 	// 异步方式读取employees属性，可以在回调方法中得到装载到的employees集合。
 });
 ```
 
 当我们利用Provider来为某种Entity的某个属性定义数据懒装载时，你会需要向Ajax服务传递当前Entity的id或类似的唯一标示，以便于服务器区分究竟应该装载那些数据。这种参数的值只有在实际运行时才能最终确定，因此需要利用特殊的定义方法。见下面的DataType声明：
-```
+```javascript
 model.dataType({
 	name: "Category",
 	properties: {
@@ -254,14 +254,14 @@ model.dataType({
 不过，当你的参数是一个结构复杂的JSON对象时，上面这种传递方式可能就不适用了。这种情况下我们可以设定Provider的sendJson属性为true，这样Provider会以JSON的形式传递所有参数，并且默认也会使用POST方式来发出Request。
 
 ### 数据分页
-在前面的内容中，你已经接触到了通过[Provider](#provider数据装载器)来实现数据分页装载。此功能最终需要由Server端的逻辑提供相应的支持，因为分页本身就是为了提高效率降低网络带宽的压力，不能简单的认为是Cola在客户端对数据进行分页显示。
+在前面的内容中，你已经接触到了通过[Provider数据装载器](guide/provider)来实现数据分页装载。此功能最终需要由Server端的逻辑提供相应的支持，因为分页本身就是为了提高效率降低网络带宽的压力，不能简单的认为是Cola在客户端对数据进行分页显示。
 
 我们在Cola中设置的pageSize参数最终会变成Ajax请求中的参数，例如最终发往服务器端的请求可能是`/data/get-products.do?from=0&limit=100`。
-> Provider支持两种风格的方式将分页参数传网服务器端，from+limit风格或pageSize+pageNo模式，具体请参考[Provider](#provider数据装载器)。
+> Provider支持两种风格的方式将分页参数传网服务器端，from+limit风格或pageSize+pageNo模式，具体请参考[Provider数据装载器](guide/provider)。
 
 需要特别加以注意的是如果你只为Provider发出的请求返回一个简单的数组，EntityList将无法知道总共有多少页数据。这可能会导致DataPilot控件中的"最后一页"按钮不可用，因为Cola不知道最后一页是哪一页。当然，不指定总页数在很多场景中都是毫无问题的，我们只要确保向后翻页的功能可用就可以了。
 但在另一些场景中，我们可能就必须要知道总共有多少页。此时通过装载数据的请求告诉Cola是一个选择。只要按照下面的方法来提供Response数据，以下的两种任选其一即可。
-```
+```json
 {
 	$entityCount: 100, //总记录数
 	$data: [
@@ -279,3 +279,4 @@ model.dataType({
 }
 ```
 > 在上例的返回结果中，$data+$entityCount和data$+entityCount$两种命名方式都是可被识别的。具体使用哪种取决于你的个人喜好。
+

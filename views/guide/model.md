@@ -14,7 +14,7 @@ Model对象管理三件事：数据、绑定、Action。
     用于设置和获取Model中的数据。Model管理数据的方式有点像Map对象，一个Model可以有若干个数据项，每个数据项的值既可以是string、boolean这样的简单值，也可以是复杂的数据实体和集合。
 
     例如：
-    ```
+    ```javascript
     // 设置name数据项的值为"Bob"
     model.set("name", "Bob");
 
@@ -38,7 +38,7 @@ Model对象管理三件事：数据、绑定、Action。
     set()/get()是用来读写Model中的数据的，而describe()则是用来描述Model中的数据。比如描述某个数据项的数据类型、数据获取来源、校验逻辑等。describe()的参数被设计的颇为灵活，用于降低各种场景下的使用复杂度。
 
     例如：
-    ```
+    ```javascript
     // 描述price数据项的数据类型number。
     // 为当第二个参数是string时，将被认为是一个DataType的名称
     model.describe("price", "number");
@@ -67,7 +67,7 @@ Model对象管理三件事：数据、绑定、Action。
     dataType()用于预定义DataType或按照名称获取DataType。
 
     例如：
-    ```
+    ```javascript
     // 声明一个名为Person的DataType
     model.dataType({
         name: "Person",
@@ -107,7 +107,7 @@ Model对于一个页面而言往往并不是一个唯一的实例，很多情况
 最常见的接触到子Model的机会是使用c-repeat指令时和使用Cola的[Router](router)功能时。
 
 以下面的示例为例：
-```
+```html
 <script type="text/javascript">
     cola(function(model) {
         model.set("addresses", [
@@ -127,3 +127,4 @@ Model对于一个页面而言往往并不是一个唯一的实例，很多情况
 在li的每一次迭代过程中，Cola-都会为当前迭代的DOM创建一个新的子Model，这个子Model既可以访问主Model中的所有数据，同时它自己也保存了一项名为address的数据，其值为当前的迭代值。而li中的span元素正是绑定了这个子Model中address，因此才能正确的显示当前的迭代值。
 
 多数情况下，开发者可能并不会感觉到这些子Model的存在，因为完全可以像使用主Model一样使用这些子Model，反正主Model中有的数据和Action，通过子Model一样能拿到。但是我认为开发者仍然需要知道在Cola-的处理过程中大致发生了些什么，以免在某些时刻犯下令人感到莫名其妙的错误。
+
