@@ -7,7 +7,7 @@ router.get('/', function (req, res, next) {
 	res.redirect("/guide/model")
 });
 router.get('/*', function (req, res, next) {
-	var templatePath = req.path.length === 1 ? "guide/index" : `guide${req.path}`;
+	var templatePath = req.path.length === 1 ? "guide/index" : ("guide" + req.path);
 
 	res.render(templatePath, {
 		title: "Cola-UI 文档中心",

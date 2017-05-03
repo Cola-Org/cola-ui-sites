@@ -7,7 +7,7 @@ router.get('/', function(req, res, next) {
 	res.redirect("/docs/button")
 });
 router.get('/*', function(req, res, next) {
-	var  templatePath = req.path.length === 1 ? "docs/index" : `docs${req.path}`;
+	var  templatePath = req.path.length === 1 ? "docs/index" : ("docs"+req.path);
 	res.render(templatePath, {
 		title: "Cola-UI 文档中心",
 		viewPath: templatePath,
