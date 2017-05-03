@@ -1,21 +1,21 @@
 module.exports = [
-	{
-		label: "快速入门",
-		menus: [
-			{
-				label: "单表数据维护",
-				path: "/docs/crud"
-			},
-			{
-				label: "主从表",
-				path: "/docs/master-detail"
-			},
-			{
-				label: "主从表（懒装载）",
-				path: "/docs/master-detail-lazy"
-			}
-		]
-	},
+	// {
+	// 	label: "快速入门",
+	// 	menus: [
+	// 		{
+	// 			label: "单表数据维护",
+	// 			path: "/docs/crud"
+	// 		},
+	// 		{
+	// 			label: "主从表",
+	// 			path: "/docs/master-detail"
+	// 		},
+	// 		{
+	// 			label: "主从表（懒装载）",
+	// 			path: "/docs/master-detail-lazy"
+	// 		}
+	// 	]
+	// },
 	{
 		icon: "icon-component-layout",
 		label: "布局",
@@ -35,10 +35,10 @@ module.exports = [
 				name: "VBox Layout",
 				path: "/docs/v-box"
 			},
-			{
-				label: "常见布局模板代码",
-				path: ""
-			}
+			// {
+			// 	label: "常见布局模板代码",
+			// 	path: ""
+			// }
 		]
 	},
 	{
@@ -221,17 +221,12 @@ module.exports = [
 				path: "/docs/calendar"
 			},
 			{
-				name: "ToolBar",
-				label: "工具条",
-				api: "cola.Toolbar.html",
-				path: "/docs/toolbar"
-			},{
-				icon: "icon-component-divider",
-				name: "Divider",
-				label: "滑动分割面板",
-				api: "cola.Divider.html",
-				path: "/docs/divider"
+				name: "Menu",
+				label: "菜单",
+				api: "cola.Menu.html",
+				path: "/docs/menu"
 			}
+
 		]
 	},
 	{
