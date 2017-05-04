@@ -2,4 +2,20 @@ extends ../article-layout
 
 block article
 	article
-		h1  TODO
+		h1 控件自定义
+		:marked
+			自定义控件，也支持Cola Widget模式直接在dom中c-tag 定义。
+
+			* attributes 属性列表
+			* events 事件列表
+			* template Dom模板，必需已COSON模式定义。
+				* 例子中 @bind 获得控件本身bind属性的值，可绑定到template Dom
+				* itemClick 在控件定义时默认提供的内部调用action(又是控件方法)，可绑定到template Dom
+
+		iframe(width="100%" height="400" src="//jsrun.net/ZrkKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0")
+		h3 继承现有控件
+		p 实现数字选择器，限定在1~10范围内，按钮样式根据值进行调整。
+		iframe(width="100%" height="400" src="//jsrun.net/grkKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0")
+
+
+

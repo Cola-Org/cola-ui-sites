@@ -35,10 +35,11 @@ module.exports = [
 				name: "VBox Layout",
 				path: "/docs/v-box"
 			},
-			// {
-			// 	label: "常见布局模板代码",
-			// 	path: ""
-			// }
+			{
+				label: "块状布局",
+				name: "Block Layout",
+				path: "/docs/block-layout"
+			}
 		]
 	},
 	{
@@ -102,12 +103,20 @@ module.exports = [
 				path: "/docs/date-picker"
 			},
 			{
-				icon: "icon-component-year-month",
-				name: "YearMonthPicker",
-				label: "年月下拉框",
-				api: "cola.YearMonthPicker.html",
-				path: "/docs/year-month-picker"
+				icon: "icon-tab",
+				name: "Tab",
+				label: "标签页",
+				api: "cola.Tab.html",
+				path: "/docs/tab"
 			},
+
+			// {
+			// 	icon: "icon-component-year-month",
+			// 	name: "YearMonthPicker",
+			// 	label: "年月下拉框",
+			// 	api: "cola.YearMonthPicker.html",
+			// 	path: "/docs/year-month-picker"
+			// },
 			{
 				icon: "icon-component-split-panel",
 				name: "SplitPanel",
@@ -167,7 +176,7 @@ module.exports = [
 			},
 			{
 				name: "Message Box",
-				label: "信息提示框",
+				label: "消息框",
 				path: "/docs/message-box"
 			},
 			{
