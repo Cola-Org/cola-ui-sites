@@ -124,13 +124,13 @@ module.exports = [
 				api: "cola.SplitPanel.html",
 				path: "/docs/split-panel"
 			},
-			{
-				icon: "icon-component-tag",
-				name: "TagEditor",
-				api: "cola.TagEditor.html",
-				label: "标签编辑器",
-				path: "/docs/tag-editor"
-			},
+			// {
+			// 	icon: "icon-component-tag",
+			// 	name: "TagEditor",
+			// 	api: "cola.TagEditor.html",
+			// 	label: "标签编辑器",
+			// 	path: "/docs/tag-editor"
+			// },
 			{
 				icon: "icon-component-layer",
 				name: "Layer",
@@ -158,7 +158,7 @@ module.exports = [
 			},
 			{
 				name: "Progress",
-				label: "进度条",
+				label: "进度条TODO",
 				api: "cola.Progress.html",
 				path: "/docs/progress"
 			},
