@@ -54,7 +54,7 @@ Cola-UI依赖jQuery和Semantic-UI，因此我们需要在html中引入jQuery和S
 </html>
 ```
 
-<script async src="//jsrun.net/WCkKp/embed/all/light/"></script>
+<script async src="//jsrun.net/TrkKp/embed/all/light/"></script>
 
 运行该示例，并尝试修改Input中的内容，你会发现Input中的改变会立刻更新到Hello后面。这就是双向数据绑定提供的功能。
 其实上面的页面中真正有效的代码只有3行，其它部分都是固定的内容。
@@ -80,7 +80,7 @@ span接受到数据源改变的消息后会立即重新从Model重读取最新�
 ## 简单的Action
 Cola-UI中的Model除了能够提供管理数据之外也可以管理动作，本例演示如何在Cola-UI执行一段逻辑代码。
 
-<script async src="//jsrun.net/fCkKp/embed/all/light/"></script>
+<script async src="//jsrun.net/UrkKp/embed/all/light/"></script>
 
 本例展示一个个最简单的事件绑定和Action调用。
 onclick是HTML规范中原本就支持的一种DOM事件，只要在前面添加"c-"就可以让它变成一个Cola的DOM指令了，由Cola来建立onclick的事件绑定。
@@ -97,7 +97,7 @@ Action是Cola中专门用于封装业务逻辑的方法，其详细说明请参�
 最简单的使用Cola-UI中控件的方式是利用DOM指令。
 例如用定义Cola-UI中的Button控件，只需要直接在HTML中嵌入一个名为c-button的节点，此处大小写并不敏感。
 
-<script async src="//jsrun.net/vCkKp/embed/all/light/"></script>
+<script async src="//jsrun.net/9rkKp/embed/all/light/"></script>
 
 在上例中我们定义了两个控件，c-input和c-button。
 可以注意到在c-input和c-button我们通常可以使用"c-"开通的DOM指令，利用这种方式在控件与数据模型之间建立双向的数据绑定。
