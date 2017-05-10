@@ -1,21 +1,21 @@
 module.exports = [
-	{
-		label: "快速入门",
-		menus: [
-			{
-				label: "单表数据维护",
-				path: "/docs/crud"
-			},
-			{
-				label: "主从表",
-				path: "/docs/master-detail"
-			},
-			{
-				label: "主从表（懒装载）",
-				path: "/docs/master-detail-lazy"
-			}
-		]
-	},
+	// {
+	// 	label: "快速入门",
+	// 	menus: [
+	// 		{
+	// 			label: "单表数据维护",
+	// 			path: "/docs/crud"
+	// 		},
+	// 		{
+	// 			label: "主从表",
+	// 			path: "/docs/master-detail"
+	// 		},
+	// 		{
+	// 			label: "主从表（懒装载）",
+	// 			path: "/docs/master-detail-lazy"
+	// 		}
+	// 	]
+	// },
 	{
 		icon: "icon-component-layout",
 		label: "布局",
@@ -36,8 +36,9 @@ module.exports = [
 				path: "/docs/v-box"
 			},
 			{
-				label: "常见布局模板代码",
-				path: ""
+				label: "块状布局",
+				name: "Block Layout",
+				path: "/docs/block-layout"
 			}
 		]
 	},
@@ -102,12 +103,20 @@ module.exports = [
 				path: "/docs/date-picker"
 			},
 			{
-				icon: "icon-component-year-month",
-				name: "YearMonthPicker",
-				label: "年月下拉框",
-				api: "cola.YearMonthPicker.html",
-				path: "/docs/year-month-picker"
+				icon: "icon-tab",
+				name: "Tab",
+				label: "标签页",
+				api: "cola.Tab.html",
+				path: "/docs/tab"
 			},
+
+			// {
+			// 	icon: "icon-component-year-month",
+			// 	name: "YearMonthPicker",
+			// 	label: "年月下拉框",
+			// 	api: "cola.YearMonthPicker.html",
+			// 	path: "/docs/year-month-picker"
+			// },
 			{
 				icon: "icon-component-split-panel",
 				name: "SplitPanel",
@@ -115,13 +124,13 @@ module.exports = [
 				api: "cola.SplitPanel.html",
 				path: "/docs/split-panel"
 			},
-			{
-				icon: "icon-component-tag",
-				name: "TagEditor",
-				api: "cola.TagEditor.html",
-				label: "标签编辑器",
-				path: "/docs/tag-editor"
-			},
+			// {
+			// 	icon: "icon-component-tag",
+			// 	name: "TagEditor",
+			// 	api: "cola.TagEditor.html",
+			// 	label: "标签编辑器",
+			// 	path: "/docs/tag-editor"
+			// },
 			{
 				icon: "icon-component-layer",
 				name: "Layer",
@@ -149,7 +158,7 @@ module.exports = [
 			},
 			{
 				name: "Progress",
-				label: "进度条",
+				label: "进度条TODO",
 				api: "cola.Progress.html",
 				path: "/docs/progress"
 			},
@@ -167,7 +176,7 @@ module.exports = [
 			},
 			{
 				name: "Message Box",
-				label: "信息提示框",
+				label: "消息框",
 				path: "/docs/message-box"
 			},
 			{
@@ -221,17 +230,12 @@ module.exports = [
 				path: "/docs/calendar"
 			},
 			{
-				name: "ToolBar",
-				label: "工具条",
-				api: "cola.Toolbar.html",
-				path: "/docs/toolbar"
-			},{
-				icon: "icon-component-divider",
-				name: "Divider",
-				label: "滑动分割面板",
-				api: "cola.Divider.html",
-				path: "/docs/divider"
+				name: "Menu",
+				label: "菜单",
+				api: "cola.Menu.html",
+				path: "/docs/menu"
 			}
+
 		]
 	},
 	{
