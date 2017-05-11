@@ -158,7 +158,7 @@ module.exports = [
 			},
 			{
 				name: "Progress",
-				label: "进度条TODO",
+				label: "进度条",
 				api: "cola.Progress.html",
 				path: "/docs/progress"
 			},
@@ -226,7 +226,7 @@ module.exports = [
 			{
 				name: "Calendar",
 				label: "日历控件",
-				api: "cola.Calender.html",
+				api: "cola.Calendar.html",
 				path: "/docs/calendar"
 			},
 			{
