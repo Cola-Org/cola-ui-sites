@@ -226,7 +226,7 @@ module.exports = [
 			{
 				name: "Calendar",
 				label: "日历控件",
-				api: "cola.Calender.html",
+				api: "cola.Calendar.html",
 				path: "/docs/calendar"
 			},
 			{
