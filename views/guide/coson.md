@@ -197,7 +197,6 @@ cola.xRender([
 		"c-bind": "text"
 	},
 	{
-		tagName: "input",
 		"c-bind": "text"
 	}
 ], model);

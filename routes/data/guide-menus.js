@@ -4,6 +4,10 @@ module.exports = [
 		path: "/guide/quick-start"
 	},
 	{
+		label: "MV架构",
+		path: "/guide/mv"
+	},
+	{
 		label: "Model (视图模型)",
 		path: "/guide/model"
 	},

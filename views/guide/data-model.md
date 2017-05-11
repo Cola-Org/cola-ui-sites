@@ -56,11 +56,13 @@ Entity属性也可以被批量的设置。例如：
 ```javascript
 address.set({
 	city: "Beijing",
-	street: "Zhichun Road",
+	street: "Jiangtai Road",
 	zipCode: "100020"
 });
 ```
 Entity除了实现上述较基本的数据管理之外还可以实现对属性值的校验、数据懒装载、装载管理等功能。具体请参考Entity的API文档。
+
+<script async src="//jsrun.net/GBkKp/embed/all/light/"></script>
 
 ## EntityList（数据实体集合）
 EntityList是Entity的集合，相对于数组它提供了更加方便高效的插入、删除，新增了当前Entity的概念，提供了数据分页和数据懒加载的功能。
@@ -117,8 +119,8 @@ model.describe("categories", {
 		},
 		products: {
 			provider: {
-				url: "/data/products.action",
-				parameter: ":id"
+				url: "/service/products",
+				parameter: "{{@id}}"
 			},
 			dataType: {
 				properties: {
@@ -154,8 +156,8 @@ model.describe("categories", {
 		},
 		categories: {
 			provider: {
-				url: "/data/categories.action",
-				parameter: ":id"
+				url: "/service/categories",
+				parameter: "{{@id}}"
 			},
 			dataType: "Category"
 		}
@@ -191,7 +193,7 @@ model.dataType([
 			},
 			products: {
 				provider: {
-					url: "/data/products.action",
+					url: "/service/products",
 					parameter: ":id"
 				},
 				dataType: "Product"
@@ -211,13 +213,13 @@ Provider是用于为数据模型提供数据的，通常是用于声明让Model�
 如果我们把一个Provider作为数据设置到Model或Entity中，或者利用describe为某个数据项声明好了Provider。那么当我们之后尝试从Model和Entity中读取这项数据时，Cola会自动调用该Provider尝试获得最终的数据。例如:
 ```javascript
 model.describe("employees", {
-	provider: "data/employees.json"
+	provider: "/service/employee"
 });
 ```
 或
 ```javascript
 model.set("employees", new cola.Provider({
-	url: "data/employees.json"
+	url: "/service/employee"
 }));
 ```
 
@@ -242,7 +244,7 @@ model.dataType({
 		products: {
 			provider: {
 				url: "/data/products.action",
-				parameter: "@id"
+				parameter: "{{@id}}"
 			}
 		}
 	}
