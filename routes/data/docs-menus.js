@@ -158,7 +158,7 @@ module.exports = [
 			},
 			{
 				name: "Progress",
-				label: "进度条TODO",
+				label: "进度条",
 				api: "cola.Progress.html",
 				path: "/docs/progress"
 			},
