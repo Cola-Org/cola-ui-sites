@@ -60,91 +60,79 @@ address.set({
 	zipCode: "100020"
 });
 ```
-Entity除了实现上述较基本的数据管理之外还可以实现对属性值的校验、数据懒装载、装载管理等功能。具体请参考Entity的API文档。
 
-<script async src="//jsrun.net/GBkKp/embed/all/light/"></script>
+Entity除了实现上述较基本的数据管理之外还可以实现对属性值的校验、数据懒装载、装载管理等功能。
+
+<iframe width="100%" height="350" src="//jsrun.net/GBkKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+
+具体请参考Entity的API文档。
 
 ## EntityList（数据实体集合）
 EntityList是Entity的集合，相对于数组它提供了更加方便高效的插入、删除，新增了当前Entity的概念，提供了数据分页和数据懒加载的功能。
 
 例如当我们要迭代EntityList中的所有Entity时，代码可以是这样的：
-```javascript
-employees.each(function(employee) {
-	... ...
-});
-```
+
+<iframe width="100%" height="500" src="//jsrun.net/YRkKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+
 EntityList的更多用法请参考API文档。
 
 ## EntityDataType（实体数据类型）
-model.EntityDataType是专门用于描述Entity的DataType。例如我们可以用这样的一段声明来描述person这种数据实体...
+model.EntityDataType是专门用于描述Entity的DataType。例如我们可以用这样的一段声明来描述person这种数据实体：
+
 ```javascript
-model.describe("person", {
-	dataType: {
-		properties:{
-			name: {
-				label: "姓名",
-				required: true
-			},
-			gendar: {
-				label: "性别",
-				dataType: "bool"
-			},
-			age: {
-				label: "年龄",
-				dataType: "int",
-				validators: [
-					{
-						$type: "number",
-						min: 18,
-						max: 70
+model.dataType({
+	name: "Employee",
+	properties: {
+		name: {
+			caption: "姓名",
+			validators: ["required"]
+		},
+		age: {
+			caption: "年龄",
+			dataType: "int",
+			validators: [{
+				$type: "number",
+				min: 16,
+				max: 80
+			}]
+		},
+		gender: {
+			caption: "性别"
+		},
+		email: {
+			caption: "电邮",
+			validators: [
+				"email",
+				function(value) {
+					if (value && value.toLowerCase().indexOf("qq.com") > 0) {
+						return "不能使用qq邮箱！";
 					}
-				]
-			}
+				}
+			]
+		},
+		province: {
+			caption: "省"
+		},
+		city: {
+			caption: "市"
+		},
+		district: {
+			caption: "区"
+		},
+		comment: {
+			caption: "备注"
 		}
 	}
 });
 ```
 Cola会自动根据此处dataType对应的那段JSON创建一个EntityDataType实例，该DataType可以限定person实体中各属性的显示名称、数据类型、校验规则等等。
 
-我们也可以利用EntityDataType来定义属性的数据懒装载，例如在下面的例子中指定了Category的products属性是一个支持数据懒装载的属性，同时还用一段子JSON还声明了products中每一个数据实体的DataType。
-```javascript
-model.describe("categories", {
-	properties:{
-		id: {
-			required: true
-		},
-		name: {
-			label: "分类名称",
-			required: true
-		},
-		products: {
-			provider: {
-				url: "/service/products",
-				parameter: "{{@id}}"
-			},
-			dataType: {
-				properties: {
-					id: {
-						dataType: "int",
-						required: true
-					},
-					name: {
-						label: "产品名称",
-						required: true
-					},
-					price: {
-						label: "价格",
-						dataType: "float"
-					}
-				}
-			}
-		}
-	}
-});
-```
+也可以在实例中测试以上这些校验规则...
+<iframe width="100%" height="480" src="//jsrun.net/qRkKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+
 下面的例子定义一个递归的树状结构，我们在定义DataType时为其声明了name属性，例如指定name为"Category"。之后我们就可以在其他地方通过"Category"这个名称来引用这个DataType了。例如此例中我们在categories属性中引用了"Category"，那就相当于又引用了自身。
 ```javascript
-model.describe("categories", {
+model.dataType({
 	name: "Category",
 	properties:{
 		id: {
@@ -155,15 +143,12 @@ model.describe("categories", {
 			required: true
 		},
 		categories: {
-			provider: {
-				url: "/service/categories",
-				parameter: "{{@id}}"
-			},
 			dataType: "Category"
 		}
 	}
 });
 ```
+
 也可以预先利用Model.dataType()声明好DataType，再到cola.data()中使用，就像下面的这个例子...
 ```javascript
 model.dataType([
@@ -192,10 +177,6 @@ model.dataType([
 				required: true
 			},
 			products: {
-				provider: {
-					url: "/service/products",
-					parameter: ":id"
-				},
 				dataType: "Product"
 			}
 		}
@@ -213,13 +194,13 @@ Provider是用于为数据模型提供数据的，通常是用于声明让Model�
 如果我们把一个Provider作为数据设置到Model或Entity中，或者利用describe为某个数据项声明好了Provider。那么当我们之后尝试从Model和Entity中读取这项数据时，Cola会自动调用该Provider尝试获得最终的数据。例如:
 ```javascript
 model.describe("employees", {
-	provider: "/service/employee"
+	provider: "/service/employees"
 });
 ```
 或
 ```javascript
 model.set("employees", new cola.Provider({
-	url: "/service/employee"
+	url: "/service/employees"
 }));
 ```
 
@@ -243,22 +224,40 @@ model.dataType({
 		},
 		products: {
 			provider: {
-				url: "/data/products.action",
+				url: "/data/products",
 				parameter: "{{@id}}"
 			}
 		}
 	}
 });
 ```
-在products对应的属性的provider中，我们通过@id来定义了参数。这表示Provider会在最终被执行之前从当前所属的Entity的id属性中读取该参数的值，即获得当前对应的Category的id作为参数值。
+在products对应的属性的provider中，我们通过{{@id}}来定义了参数。这表示Provider会在最终被执行之前从当前所属的Entity的id属性中读取该参数的值，即获得当前对应的Category的id作为参数值。
+
+`{{ }}`中间的内容是Cola-UI的表达式，如果变量名以`@`开头那表示从当前所属的Entity中读取属性值，否则表示从当前的Model中读取数据项。
+
+见实例...
+<iframe width="100%" height="720" src="//jsrun.net/XukKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
 
 另外，对于那些比较简单的parameter值，Cola会直接把它作为Request的GET参数(参数名为parameter)来传递，例如：`/data/get-items.action?from=20&limit=10&parameter=foo`，这里的from和limit可能是Cola根据当前EntityList的分页情况自动添加的，其中from表示从第几条记录开始（从0开始计数），limit表示最多返回多少条记录（相当于每页的大小）。
-不过，当你的参数是一个结构复杂的JSON对象时，上面这种传递方式可能就不适用了。这种情况下我们可以设定Provider的sendJson属性为true，这样Provider会以JSON的形式传递所有参数，并且默认也会使用POST方式来发出Request。
+不过，当你的参数是一个结构复杂的JSON对象时，上面这种传递方式可能就不适用了。这种情况下我们可以设定Provider的sendJson属性为true，这样Provider会以JSON的形式传递所有参数，并且默认也会使用POST方式来发出Request。例如：
+
+```javascript
+model.describe("itmes", {
+	provider: {
+	   url: "/data/products",
+	   parameter: {
+	       startDate: "2016-08-23",
+	       endDate: "2016-11-18"
+	   },
+	   sendJson: true
+	}
+});
+```
 
 ### 数据分页
 在前面的内容中，你已经接触到了通过[Provider数据装载器](guide/provider)来实现数据分页装载。此功能最终需要由Server端的逻辑提供相应的支持，因为分页本身就是为了提高效率降低网络带宽的压力，不能简单的认为是Cola在客户端对数据进行分页显示。
 
-我们在Cola中设置的pageSize参数最终会变成Ajax请求中的参数，例如最终发往服务器端的请求可能是`/data/get-products.do?from=0&limit=100`。
+我们在Cola中设置的pageSize参数最终会变成Ajax请求中的参数，例如最终发往服务器端的请求可能是`/data/products?from=0&limit=100`。
 > Provider支持两种风格的方式将分页参数传网服务器端，from+limit风格或pageSize+pageNo模式，具体请参考[Provider数据装载器](guide/provider)。
 
 需要特别加以注意的是如果你只为Provider发出的请求返回一个简单的数组，EntityList将无法知道总共有多少页数据。这可能会导致DataPilot控件中的"最后一页"按钮不可用，因为Cola不知道最后一页是哪一页。当然，不指定总页数在很多场景中都是毫无问题的，我们只要确保向后翻页的功能可用就可以了。

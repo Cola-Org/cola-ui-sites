@@ -12,7 +12,7 @@ module.exports = [
 		path: "/guide/model"
 	},
 	{
-		label: "数据相关概念",
+		label: "数据和数据类型",
 		path: "/guide/data-model"
 	},
 	{
