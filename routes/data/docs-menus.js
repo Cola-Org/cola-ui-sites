@@ -234,8 +234,13 @@ module.exports = [
 				label: "菜单",
 				api: "cola.Menu.html",
 				path: "/docs/menu"
+			},
+			{
+				name: "RadioGroup",
+				label: "单选按钮组",
+				api: "cola.RadioGroup.html",
+				path: "/docs/radioGroup"
 			}
-
 		]
 	},
 	{
