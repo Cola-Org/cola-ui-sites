@@ -241,6 +241,13 @@ module.exports = [
 				api: "cola.RadioGroup.html",
 				path: "/docs/radioGroup"
 			}
+			,
+			{
+				name: "ListView",
+				label: "列表控件",
+				api: "cola.ListView.html",
+				path: "/docs/listView"
+			}
 		]
 	},
 	{
