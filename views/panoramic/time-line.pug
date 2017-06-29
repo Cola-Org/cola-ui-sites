@@ -1,0 +1,10 @@
+c-timeline.circular
+	ul
+		li(c-repeat="item in items")
+			label
+				div(c-bind="item.time.date")
+			icon
+				i.icon(c-class="item.icon")
+			content
+				strong(c-bind="item.content.title")
+				p(c-bind="item.content.description")

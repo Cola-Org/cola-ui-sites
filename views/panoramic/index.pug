@@ -1,0 +1,206 @@
+extends ../.cola-page-pc
+append head
+	link(rel="stylesheet", type="text/css", href="./panoramic/index.css")
+block body
+	include ../page-header
+
+	.main-wrapper
+		c-segment.basic
+			blocks.widget-list.small-cols-2
+				item
+					c-panel.basic.block(caption="Button 按钮")
+						.content
+							p 普通按钮
+							c-button.primary(caption="添加")
+							c-button(caption="修改")
+							c-button.basic(caption="删除")
+							c-button.secondary(caption="保存")
+							hr
+							p 禁用按钮
+							c-button.disabled.primary(caption="添加")
+							c-button.disabled(caption="修改")
+							c-button.disabled.basic(caption="删除")
+							c-button.disabled.secondary(caption="保存")
+							hr
+							p 按下状态
+							c-button.active.primary(caption="添加")
+							c-button.active(caption="修改")
+							c-button.active.basic(caption="删除")
+							c-button.secondary.active(caption="保存")
+							hr
+							p 执行状态
+							c-button.primary.loading(caption="添加")
+							c-button.loading(caption="修改")
+							c-button.basic.loading(caption="删除")
+							c-button.secondary.loading(caption="保存")
+
+				item
+					c-panel.basic.block(caption="Input 输入框")
+						.content
+							c-input(width="200px" placeholder="请输入关键字")
+							hr
+							c-input(icon="search" placeholder="带图标的..." width="200px")
+								input
+							hr
+							c-input.action(icon="search" iconPosition="left" placeholder="内嵌按钮的..." width="200px")
+								input
+								c-button(caption="搜索")
+							hr
+							c-input.action(icon="search" iconPosition="left" placeholder="内嵌主色按钮..." width="200px")
+								input
+								c-button.primary(caption="搜索")
+							hr
+							c-input.error(icon="search" placeholder="错误..." width="200px")
+							hr
+							c-input.focus(icon="search" placeholder="输入状态的..." width="200px")
+							hr
+							c-input.labeled(placeholder="带标签的..." width="200px")
+								c-label.basic +86
+								input
+							hr
+							c-input(readOnly="true" placeholder="不可编辑的" )
+
+				item
+					c-panel.block.basic(caption="CheckBox 复选框")
+						.content
+							c-checkbox(label="我已阅读并同意以上所有条款")
+							hr
+							c-checkbox(value="{{true}}" label="我已阅读并同意以上所有条款")
+				item
+					c-panel.block.basic(caption="Radio Group 单选按钮组")
+						.content
+							c-subview(url="/panoramic/radio" jsUrl="$")
+
+				item
+					c-panel.block.basic(caption="Toggle 滑动开关")
+						.content
+							c-checkbox.toggle(label="滑动开关已打开" value="{{true}}")
+							hr
+							c-checkbox.slider(label="滑动开关已打开" value="{{true}}")
+							hr
+							c-checkbox.toggle(label="滑动开关已关闭")
+							hr
+							c-checkbox.slider(label="滑动开关已关闭" )
+				item
+					c-panel.block.basic(caption="Button Group 按钮组")
+						.content
+							c-buttongroup
+								c-button(caption="添加")
+								c-button(caption="修改")
+								c-button(caption="删除")
+								c-button(caption="保存")
+							hr
+							c-buttongroup.primary
+								c-button(caption="添加")
+								c-button(caption="修改")
+								c-button(caption="删除")
+								c-button(caption="保存")
+							hr
+							c-buttongroup
+								c-button.disabled(caption="添加")
+								c-button(caption="修改")
+								c-button.secondary(caption="删除")
+								c-button.primary(caption="保存")
+				item
+					c-panel.block.basic(caption="Textarea 多行输入框")
+						.content
+							c-textarea(placeholder="请输入详细信息...")
+				item
+					c-panel.block.basic(caption="Rating 评分控件")
+						.content
+							c-subview(url="/panoramic/rating" jsUrl="$")
+				item
+					c-panel.block.basic(caption="Progress 普通进度条")
+						.content
+							c-subview(url="/panoramic/progress" jsUrl="$")
+				item
+					c-panel.block.basic(caption="Progress 圆形进度条")
+						.content
+							c-subview(url="/panoramic/progress-circle" jsUrl="$")
+				item
+					c-panel.basic.block(caption="Calendar 日历组件")
+						.content
+							c-calendar
+				item
+					c-panel.block.basic(caption="Dropdown 下拉框")
+						.content
+							c-subview(url="/panoramic/dropdown" jsUrl="$")
+				item
+					c-panel(caption="Panel 面板" height="100px" width="320px")
+						.content
+				item
+					c-panel.block.basic(caption="Avatar 头像")
+						.content
+							c-form
+								fields.cols-2
+									field
+										img(class="ui avatar image" src="/resources/images/avatars/benny.jpeg")
+										span Benny Bao
+									field
+										img(class="ui avatar image" src="/resources/images/avatars/alex.png")
+										span Alex Tong
+				item
+					c-panel.block.basic(caption="Image 图片")
+						.content
+							img(class="ui medium bordered image" style="height:200px" src="/resources/images/white-image.png")
+
+				item
+					c-panel.block.basic(caption="SelectButton 按钮选择器")
+						.content
+							c-subview(url="/panoramic/select-button" jsUrl="$")
+				item
+					c-panel.block.basic(caption="Tree 树控件" height="400px")
+						.content
+							c-subview(url="/panoramic/tree" jsUrl="$")
+				item
+					c-panel.block.basic(caption="Table 表格" height="400px")
+						.content
+							c-subview(url="/panoramic/table" jsUrl="$")
+				item
+					c-panel.block.basic(caption="Message Box 消息框" height="400px")
+						.content
+							c-subview(url="/panoramic/message-box" jsUrl="$")
+				item
+					c-panel.block.basic(caption="Message Box 消息框" height="400px")
+						.content
+							c-subview(url="/panoramic/message-box2" jsUrl="/panoramic/message-box.js")
+				item
+					c-panel.block.basic(caption="Tab 标签页" height="260px")
+						.content
+							c-tab(height="200px")
+								nav
+									tabs
+										tab.active(name="home" caption="首页" icon="home")
+										tab(name="dashboard" caption="仪表盘" icon="dashboard")
+								contents
+									content.active(name="home")
+									content(name="dashboard")
+				item
+					c-panel.block.basic(caption="滑动面板 SplitPane" height="260px")
+						.content
+							c-split-pane(height="200px")
+								c-split-pane.pane(direction="left")
+									.pane
+									.pane
+								.pane
+				item
+					c-panel.block.basic(caption="NotifyTip 提示框" height="510px")
+						.content
+							c-subview(url="/panoramic/tip" jsUrl="$")
+				item
+					c-panel.block.basic(caption="TimeLine 时间线" height="510px")
+						.content
+							c-subview(url="/panoramic/time-line" jsUrl="$")
+				item
+					c-panel.block.basic(caption="breadcrumb 面包屑" height="510px")
+						.content
+							c-subview(url="/panoramic/breadcrumb" jsUrl="$")
+				item
+					c-panel.block.basic(caption="carousel 走马灯" height="510px")
+						.content
+							c-subview(url="/panoramic/carousel" jsUrl="$")
+
+	include ../page-footer
+
+
+

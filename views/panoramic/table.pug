@@ -1,0 +1,8 @@
+c-table(bind="employees"  sortMode="local")
+	column(property="name" caption="名称" sortable="true")
+	column(property="phone" caption="电话" sortable="true")
+	column(property="email" caption="邮箱" sortable="true")
+hr
+
+c-pager(bind="employees")
+	item 分页工具条

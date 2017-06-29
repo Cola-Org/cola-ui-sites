@@ -1,0 +1,20 @@
+c-form
+	field
+		label 列表
+		c-dropdown(bind="selected" valueProperty="name" textProperty="name" c-items="citys")
+	field
+		label 弹出式
+		c-dropdown(bind="selected"  valueProperty="name" textProperty="name" dropdownHeight="300px" openMode="dialog"  c-items="citys")
+			input(placeholder="弹出式")
+	field
+		label 禁用
+		c-dropdown(bind="selected" valueProperty="name" disabled="true" textProperty="name" c-items="citys")
+	field
+		label 日期
+		c-datepicker
+	field
+		label 年月
+		c-monthpicker
+	field
+		label 请选择时间
+		c-datepicker

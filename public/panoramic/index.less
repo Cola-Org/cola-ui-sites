@@ -1,0 +1,58 @@
+@import "../less/.global.less";
+@import "../docs/.page-header.less";
+@import "../docs/.main-wrapper.less";
+@import "../docs/.page-footer.less";
+
+html body {
+	background-color: #f3f5f6;
+	font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, SimSun, sans-serif;
+	overflow: auto;
+	font-weight: 400;
+	-webkit-font-smoothing: antialiased;
+
+	h1, h2, h3 {
+		color: #1f2f3d;
+		font-weight: 400;
+	}
+	p {
+		color: @fontColor;
+	}
+
+	.main-wrapper {
+		padding: 20px;
+		width: 940px;
+		margin: 0 auto;
+	}
+
+	.ui.panel.basic.block{
+		>.header{
+			.box-shadow(0px 0px 1px 0px #e7eaec);
+			.collapse-btn{
+				display: none;
+			}
+		}
+
+		.box-shadow(none);
+	}
+
+	messages, message {
+		display: block;
+	}
+	hr {
+		border: none !important;
+	}
+	#menuView, #formView {
+		height: 200px;
+	}
+	c-progress.ui.progress{
+		display:inline-block;
+	}
+
+	blocks.widget-list{
+		>item{
+			padding-bottom: 20px;
+		}
+	}
+
+}
+
