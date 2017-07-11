@@ -1,21 +1,8 @@
 module.exports = [
-	// {
-	// 	label: "快速入门",
-	// 	menus: [
-	// 		{
-	// 			label: "单表数据维护",
-	// 			path: "/docs/crud"
-	// 		},
-	// 		{
-	// 			label: "主从表",
-	// 			path: "/docs/master-detail"
-	// 		},
-	// 		{
-	// 			label: "主从表（懒装载）",
-	// 			path: "/docs/master-detail-lazy"
-	// 		}
-	// 	]
-	// },
+	{
+		label: "全景图",
+		path: "/panoramic/index"
+	},
 	{
 		icon: "icon-component-layout",
 		label: "布局",
