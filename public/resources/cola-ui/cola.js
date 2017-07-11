@@ -1508,7 +1508,7 @@
       var action, attrConfig, eventName, expression, i, parts, ref, scope;
       if (typeof value === "string" && this._scope) {
         if (value.charCodeAt(0) === 123) {
-          parts = cola._compileText(value);
+          parts = cola._compileText(this._scope, value);
           if ((parts != null ? parts.length : void 0) > 0) {
             value = parts[0];
           }
@@ -2132,7 +2132,7 @@
     });
   }
 
-  cola._compileText = function(text) {
+  cola._compileText = function(scope, text) {
     var expr, exprStr, p, parts, s;
     p = 0;
     s = 0;
@@ -2145,7 +2145,7 @@
           }
           parts.push(text.substring(p, s));
         }
-        expr = cola._compileExpression(exprStr, exprStr.indexOf(" in ") > 0 ? "repeat" : void 0);
+        expr = cola._compileExpression(scope, exprStr, exprStr.indexOf(" in ") > 0 ? "repeat" : void 0);
         if (!parts) {
           parts = [expr];
         } else {
@@ -2194,10 +2194,17 @@
     }
   };
 
-  cola._compileExpression = function(exprStr, specialType) {
+  cola._compileExpression = function(scope, exprStr, specialType) {
     var aliasName, exp, i;
     if (!exprStr) {
       return null;
+    }
+    if (exprStr.charCodeAt(0) === 63) {
+      exp = cola._compileExpression(scope, exprStr.substring(1));
+      exprStr = exp.evaluate(scope, "never");
+      if (!exprStr) {
+        return null;
+      }
     }
     if (specialType === "repeat") {
       i = exprStr.indexOf(" in ");
@@ -2271,10 +2278,17 @@
         this.isStatic = true;
       }
       this.compile(exprStr);
+      this.writeable = (this.type === "MemberExpression" || this.type === "Identifier") && !this.hasComplexStatement;
+      if (this.writeable) {
+        this.writeablePath = this.paths[0];
+      }
+      if (this.hasDynaPath) {
+        this.hasComplexStatement = this.hasDynaPath;
+        delete this.paths;
+      }
       if (watchPaths) {
         this.paths = watchPaths;
       }
-      this.writeable = (this.type === "MemberExpression" || this.type === "Identifier") && !this.hasCallStatement;
     }
 
     Expression.prototype.compile = function(exprStr) {
@@ -2299,7 +2313,7 @@
             }
             break;
           case "CallExpression":
-            context.hasCallStatement = true;
+            context.hasComplexStatement = true;
             callee = node.callee;
             if (callee.type === "Identifier") {
               parts.push("scope.action(\"");
@@ -2360,13 +2374,6 @@
             parts.push("]");
         }
         if (close && pathParts.length) {
-          if (pathParts[0].charCodeAt(0) === 64) {
-            context.isDyna = true;
-            if (context.dynaPathMap == null) {
-              context.dynaPathMap = {};
-            }
-            context.dynaPathMap[pathParts[0].substring(1)] = pathParts.slice(0);
-          }
           path = pathParts.join(".");
           if (!context.paths) {
             context.paths = [path];
@@ -2389,9 +2396,6 @@
 
     Expression.prototype.getData = function(scope, path, loadMode, dataCtx) {
       var retValue;
-      if (this.pathReplacement) {
-        path = this.pathReplacement[path] || path;
-      }
       retValue = scope.get(path, loadMode, dataCtx);
       if (retValue === void 0 && (dataCtx != null ? dataCtx.vars : void 0)) {
         retValue = dataCtx.vars[path];
@@ -2400,17 +2404,7 @@
     };
 
     Expression.prototype.evaluate = function(scope, loadMode, dataCtx) {
-      var dynaPath, originPath, path, ref, retValue;
-      if (this.dynaPathMap) {
-        this.pathReplacement = {};
-        ref = this.dynaPathMap;
-        for (dynaPath in ref) {
-          path = ref[dynaPath];
-          originPath = path.join(".");
-          path[0] = this.getData(scope, dynaPath, "never", dataCtx);
-          this.pathReplacement[originPath] = path.join(".");
-        }
-      }
+      var retValue;
       retValue = eval(this.script);
       if (retValue instanceof cola.Chain) {
         retValue = retValue._data;
@@ -2424,7 +2418,7 @@
         return this.parentPath;
       }
       if (this.writeable) {
-        path = this.paths[0];
+        path = this.writeablePath;
         if (this.type === "Identifier") {
           info = {
             parentPath: null,
@@ -3561,11 +3555,9 @@
                   break;
                 }
               }
-              if (!m) {
-                matches = false;
-                if (!children) {
-                  break;
-                }
+              if (m) {
+                matches = true;
+                break;
               }
             } else if (option.mode === "entity") {
               if (!_matchValue(entity.get(prop), propFilter)) {
@@ -6502,7 +6494,7 @@
             this.expressionPaths.push(path.split("."));
           }
         }
-        if (!expression.paths && expression.hasCallStatement && !expression.hasDefinedPath) {
+        if (!expression.paths && expression.hasComplexStatement && !expression.hasDefinedPath) {
           this.watchAllMessages();
         } else {
           this.watchPath(expression.paths);
@@ -6580,8 +6572,8 @@
 
     AliasScope.prototype.setExpression = function(expression) {
       AliasScope.__super__.setExpression.call(this, expression);
-      if (expression && typeof expression.paths.length === 1 && !expression.hasCallStatement) {
-        this.dataType = this.parent.data.getDataType(expression.paths[0]);
+      if (expression && typeof expression.writable) {
+        this.dataType = this.parent.data.getDataType(expression.writeablePath || expression.paths[0]);
       }
     };
 
@@ -6622,7 +6614,7 @@
           this.refreshTargetData();
           allProcessed = true;
         } else if (this.expression) {
-          if (!this.expressionPaths && this.expression.hasCallStatement && !this.expression.hasDefinedPath) {
+          if (!this.expressionPaths && this.expression.hasComplexStatement && !this.expression.hasDefinedPath) {
             cola.util.delay(this, "retrieve", 100, (function(_this) {
               return function() {
                 _this.retrieveData();
@@ -6978,7 +6970,7 @@
         }
       }
       if (processMoreMessage && this.expression) {
-        if (!this.expressionPaths && this.expression.hasCallStatement && !this.expression.hasDefinedPath) {
+        if (!this.expressionPaths && this.expression.hasComplexStatement && !this.expression.hasDefinedPath) {
           cola.util.delay(this, "retrieve", 100, (function(_this) {
             return function() {
               _this.retrieveData();
@@ -7062,6 +7054,11 @@
       if (path) {
         rootData = this._getRootData();
         if (typeof path === "string") {
+          if (path.charCodeAt(0) === 64) {
+            firstPart = i > 0 ? path.substring(0, i) : path;
+            firstPart = this.get(firstPart.substring(1));
+            path = firstPart + (i > 0 ? path.substring(i + 1) : "");
+          }
           i = path.indexOf('.');
           if (i > 0) {
             firstPart = path.substring(0, i);
@@ -7681,10 +7678,16 @@
     };
 
     AliasDataModel.prototype.get = function(path, loadMode, context) {
-      var alias, aliasLen, c, targetData;
+      var alias, aliasLen, c, firstPart, i, targetData;
       alias = this.alias;
+      if ((path != null ? path.charCodeAt(0) : void 0) === 64) {
+        i = path.indexOf('.');
+        firstPart = i > 0 ? path.substring(0, i) : path;
+        firstPart = this.get(firstPart.substring(1));
+        path = firstPart + (i > 0 ? path.substring(i + 1) : "");
+      }
       aliasLen = alias.length;
-      if (path && path.substring(0, aliasLen) === alias) {
+      if ((path != null ? path.substring(0, aliasLen) : void 0) === alias) {
         c = path.charCodeAt(aliasLen);
         if (c === 46) {
           if (path.indexOf(".") > 0) {
@@ -7703,8 +7706,14 @@
     };
 
     AliasDataModel.prototype.set = function(path, data, context) {
-      var alias, aliasLen, c, ref;
+      var alias, aliasLen, c, firstPart, i, ref;
       alias = this.alias;
+      if (path.charCodeAt(0) === 64) {
+        i = path.indexOf('.');
+        firstPart = i > 0 ? path.substring(0, i) : path;
+        firstPart = this.get(firstPart.substring(1));
+        path = firstPart + (i > 0 ? path.substring(i + 1) : "");
+      }
       aliasLen = alias.length;
       if (path && path.substring(0, aliasLen) === alias) {
         c = path.charCodeAt(aliasLen);
@@ -7898,7 +7907,7 @@
       this.expression = expression1;
       this.scope = scope;
       this.paths = this.expression.paths || [];
-      this.watchingMoreMessage = !this.paths.length && this.expression.hasCallStatement && !this.expression.hasDefinedPath;
+      this.watchingMoreMessage = !this.paths.length && this.expression.hasComplexStatement && !this.expression.hasDefinedPath;
       ref = this.paths;
       for (l = 0, len1 = ref.length; l < len1; l++) {
         path = ref[l];
@@ -8325,6 +8334,10 @@
     return new cola.Chain(data);
   };
 
+  cola.defaultAction.get = function(path) {
+    return this.get(path);
+  };
+
   cola.defaultAction["default"] = function(value, defaultValue) {
     if (defaultValue == null) {
       defaultValue = "";
@@ -8413,10 +8426,7 @@
     }
   };
 
-  cola.defaultAction.filter = function(collection, criteria, option) {
-    criteria = cola._trimCriteria(criteria, option);
-    return cola.util.filter(collection, criteria, option);
-  };
+  cola.defaultAction.filter = cola.util.filter;
 
   cola.defaultAction.sort = cola.util.sort;
 
@@ -8873,7 +8883,7 @@
         if (expr.match(/^{{[^{{}}]+}}$/)) {
           expression = expr.substring(2, expr.length - 2);
           if (_SYS_PARAMS.indexOf(expression) < 0) {
-            expression = cola._compileExpression(expression);
+            expression = cola._compileExpression(context.expressionScope, expression);
             if (expression) {
               return expression.evaluate(context.expressionScope, "never");
             }
@@ -9077,8 +9087,9 @@
           value = store[key];
           delete store[key];
         } else {
+          value = store;
           delete cola.util.userDataStore[id];
-          userData.size--;
+          cola.util.userDataStore.size--;
         }
       }
     }
@@ -10011,7 +10022,20 @@
   cola._BindingFeature = (function() {
     function _BindingFeature() {}
 
-    _BindingFeature.prototype.init = function() {};
+    _BindingFeature.prototype.init = function() {
+      this.prepared = true;
+    };
+
+    _BindingFeature.prototype.clone = function() {
+      var cloned, p, v;
+      cloned = new this.constructor();
+      for (p in this) {
+        v = this[p];
+        cloned[p] = v;
+      }
+      delete cloned.id;
+      return cloned;
+    };
 
     return _BindingFeature;
 
@@ -10020,20 +10044,31 @@
   cola._ExpressionFeature = (function(superClass) {
     extend(_ExpressionFeature, superClass);
 
-    function _ExpressionFeature(expression1) {
-      this.expression = expression1;
-      if (this.expression) {
-        this.isStatic = this.expression.isStatic;
-        this.paths = this.expression.paths || [];
-        if (!this.paths.length && this.expression.hasCallStatement) {
-          this.paths = ["**"];
-          if (!this.isStatic) {
-            this.delay = true;
-          }
-          this.watchingMoreMessage = !this.expression.hasDefinedPath;
-        }
-      }
+    function _ExpressionFeature(expressionStr) {
+      this.expressionStr = expressionStr;
     }
+
+    _ExpressionFeature.prototype.init = function(domBinding, force) {
+      if (force || this.expressionStr.charCodeAt(0) !== 63) {
+        this.prepared = true;
+        this.compile(domBinding.scope);
+      }
+    };
+
+    _ExpressionFeature.prototype.compile = function(scope) {
+      var expression;
+      this.prepared = true;
+      expression = this.expression = cola._compileExpression(scope, this.expressionStr, this.expressionType);
+      this.isStatic = expression.isStatic;
+      this.paths = expression.paths || [];
+      if (!this.paths.length && expression.hasComplexStatement) {
+        this.paths = ["**"];
+        if (!this.isStatic) {
+          this.delay = true;
+        }
+        this.watchingMoreMessage = !expression.hasDefinedPath;
+      }
+    };
 
     _ExpressionFeature.prototype.evaluate = function(domBinding, dataCtx, loadMode) {
       var scope;
@@ -10055,7 +10090,7 @@
       if (dataCtx == null) {
         dataCtx = {};
       }
-      if (!this._refresh) {
+      if (!(this.prepared && this._refresh)) {
         return;
       }
       if (this.delay && !force) {
@@ -10082,15 +10117,26 @@
   cola._AliasFeature = (function(superClass) {
     extend(_AliasFeature, superClass);
 
-    _AliasFeature.prototype.ignoreBind = true;
-
-    function _AliasFeature(expression) {
-      _AliasFeature.__super__.constructor.call(this, expression);
-      this.alias = expression.alias;
+    function _AliasFeature() {
+      return _AliasFeature.__super__.constructor.apply(this, arguments);
     }
 
-    _AliasFeature.prototype.init = function(domBinding) {
+    _AliasFeature.prototype.expressionType = "alias";
+
+    _AliasFeature.prototype.ignoreBind = true;
+
+    _AliasFeature.prototype.compile = function(scope) {
+      _AliasFeature.__super__.compile.call(this, scope);
+      return this.alias = this.expression.alias;
+    };
+
+    _AliasFeature.prototype.init = function(domBinding, force) {
+      _AliasFeature.__super__.init.call(this, domBinding, force);
+      if (!this.prepared) {
+        return;
+      }
       domBinding.scope = new cola.AliasScope(domBinding.scope, this.expression);
+      this._refresh(domBinding);
       domBinding.subScopeCreated = true;
     };
 
@@ -10107,15 +10153,25 @@
   cola._RepeatFeature = (function(superClass) {
     extend(_RepeatFeature, superClass);
 
-    _RepeatFeature.prototype.ignoreBind = true;
-
-    function _RepeatFeature(expression) {
-      _RepeatFeature.__super__.constructor.call(this, expression);
-      this.alias = expression.alias;
+    function _RepeatFeature() {
+      return _RepeatFeature.__super__.constructor.apply(this, arguments);
     }
 
-    _RepeatFeature.prototype.init = function(domBinding) {
+    _RepeatFeature.prototype.expressionType = "repeat";
+
+    _RepeatFeature.prototype.ignoreBind = true;
+
+    _RepeatFeature.prototype.compile = function(scope) {
+      _RepeatFeature.__super__.compile.call(this, scope);
+      return this.alias = this.expression.alias;
+    };
+
+    _RepeatFeature.prototype.init = function(domBinding, force) {
       var scope;
+      _RepeatFeature.__super__.init.call(this, domBinding, force);
+      if (!this.prepared) {
+        return;
+      }
       domBinding.scope = scope = new cola.ItemsScope(domBinding.scope, this.expression);
       scope.onItemsRefresh = (function(_this) {
         return function() {
@@ -10306,14 +10362,13 @@
     };
 
     _RepeatFeature.prototype.createNewItem = function(repeatDomBinding, templateDom, scope, item, index) {
-      var domBinding, itemDom, itemId, itemScope, templateDomBinding;
+      var domBinding, itemDom, itemId, itemScope;
       itemScope = new cola.ItemScope(scope, this.alias);
       itemScope.data.setTargetData(item, true);
       itemScope.data.setIndex(index, true);
       itemDom = templateDom.cloneNode(true);
       this.deepCloneNodeData(itemDom, itemScope, false);
-      templateDomBinding = cola.util.userData(templateDom, cola.constants.DOM_BINDING_KEY);
-      domBinding = templateDomBinding.clone(itemDom, itemScope);
+      domBinding = cola.util.userData(itemDom, cola.constants.DOM_BINDING_KEY);
       this.refreshItemDomBinding(itemDom, itemScope);
       if (typeof item === "object") {
         itemId = cola.Entity._getEntityId(item);
@@ -10326,7 +10381,7 @@
       return itemDom;
     };
 
-    _RepeatFeature.prototype.deepCloneNodeData = function(node, scope, cloneDomBinding) {
+    _RepeatFeature.prototype.deepCloneNodeData = function(node, scope) {
       var child, clonedStore, k, store, v;
       store = cola.util.userData(node);
       if (store) {
@@ -10334,9 +10389,7 @@
         for (k in store) {
           v = store[k];
           if (k === cola.constants.DOM_BINDING_KEY) {
-            if (cloneDomBinding) {
-              v = v.clone(node, scope);
-            }
+            v = v.clone(node, scope);
           } else if (k.substring(0, 2) === "__") {
             continue;
           }
@@ -10347,7 +10400,7 @@
       child = node.firstChild;
       while (child) {
         if (child.nodeType !== 3 && !(typeof child.hasAttribute === "function" ? child.hasAttribute(cola.constants.IGNORE_DIRECTIVE) : void 0)) {
-          this.deepCloneNodeData(child, scope, true);
+          this.deepCloneNodeData(child, scope);
         }
         child = child.nextSibling;
       }
@@ -10392,6 +10445,7 @@
       this.action = action1;
       this.paths = paths1;
       this.watchingMoreMessage = true;
+      this.prepared = true;
     }
 
     _WatchFeature.prototype.processMessage = function(domBinding, bindingPath) {
@@ -10416,12 +10470,16 @@
 
     _EventFeature.prototype.ignoreBind = true;
 
-    function _EventFeature(expression1, event) {
-      this.expression = expression1;
+    function _EventFeature(expressionStr, event) {
+      this.expressionStr = expressionStr;
       this.event = event;
     }
 
-    _EventFeature.prototype.init = function(domBinding) {
+    _EventFeature.prototype.init = function(domBinding, force) {
+      _EventFeature.__super__.init.call(this, domBinding, force);
+      if (!this.prepared) {
+        return;
+      }
       domBinding.$dom.on(this.event, (function(_this) {
         return function(evt) {
           var oldScope;
@@ -10452,16 +10510,13 @@
     }
 
     _DomFeature.prototype.writeBack = function(domBinding, value) {
-      var paths, ref;
-      if (!((ref = this.expression) != null ? ref.writeable : void 0)) {
+      var ref;
+      if (!(this.prepared && ((ref = this.expression) != null ? ref.writeable : void 0))) {
         return;
       }
-      paths = this.paths;
-      if (paths && paths.length === 1) {
-        this.ignoreMessage = true;
-        domBinding.scope.set(paths[0], value);
-        this.ignoreMessage = false;
-      }
+      this.ignoreMessage = true;
+      domBinding.scope.set(this.expression.writeablePath, value);
+      this.ignoreMessage = false;
     };
 
     _DomFeature.prototype.processMessage = function(domBinding, bindingPath, path, type, arg) {
@@ -10485,9 +10540,9 @@
   cola._DomAttrFeature = (function(superClass) {
     extend(_DomAttrFeature, superClass);
 
-    function _DomAttrFeature(expression, attr1) {
+    function _DomAttrFeature(expressionStr, attr1) {
+      this.expressionStr = expressionStr;
       this.attr = attr1;
-      _DomAttrFeature.__super__.constructor.call(this, expression);
     }
 
     _DomAttrFeature.prototype._doRender = function(domBinding, value) {
@@ -10503,6 +10558,12 @@
         cola.util.setText(domBinding.dom, value != null ? value : "");
       } else if (attr === "html") {
         domBinding.$dom.html(value != null ? value : "");
+      } else if (typeof value === "boolean") {
+        if (value) {
+          domBinding.dom.setAttribute(attr, "");
+        } else {
+          domBinding.dom.removeAttribute(attr);
+        }
       } else {
         domBinding.dom.setAttribute(attr, value != null ? value : "");
       }
@@ -10515,9 +10576,9 @@
   cola._DomStylePropFeature = (function(superClass) {
     extend(_DomStylePropFeature, superClass);
 
-    function _DomStylePropFeature(expression, prop1) {
+    function _DomStylePropFeature(expressionStr, prop1) {
+      this.expressionStr = expressionStr;
       this.prop = prop1;
-      _DomStylePropFeature.__super__.constructor.call(this, expression);
     }
 
     _DomStylePropFeature.prototype._doRender = function(domBinding, value) {
@@ -10531,8 +10592,8 @@
   cola._DomClassFeature = (function(superClass) {
     extend(_DomClassFeature, superClass);
 
-    function _DomClassFeature(expression) {
-      _DomClassFeature.__super__.constructor.call(this, expression);
+    function _DomClassFeature() {
+      return _DomClassFeature.__super__.constructor.apply(this, arguments);
     }
 
     _DomClassFeature.prototype._doRender = function(domBinding, value) {
@@ -10552,9 +10613,9 @@
   cola._DomToggleClassFeature = (function(superClass) {
     extend(_DomToggleClassFeature, superClass);
 
-    function _DomToggleClassFeature(expression, className1) {
+    function _DomToggleClassFeature(expressionStr, className1) {
+      this.expressionStr = expressionStr;
       this.className = className1;
-      _DomToggleClassFeature.__super__.constructor.call(this, expression);
     }
 
     _DomToggleClassFeature.prototype._doRender = function(domBinding, value) {
@@ -10572,13 +10633,16 @@
       return _TextBoxFeature.__super__.constructor.apply(this, arguments);
     }
 
-    _TextBoxFeature.prototype.init = function(domBinding) {
+    _TextBoxFeature.prototype.init = function(domBinding, force) {
       var feature;
+      _TextBoxFeature.__super__.init.call(this, domBinding, force);
+      if (!this.prepared) {
+        return;
+      }
       feature = this;
       domBinding.$dom.on("input", function() {
         feature.writeBack(domBinding, this.value);
       });
-      _TextBoxFeature.__super__.init.call(this);
     };
 
     _TextBoxFeature.prototype._doRender = function(domBinding, value) {
@@ -10596,13 +10660,16 @@
       return _CheckboxFeature.__super__.constructor.apply(this, arguments);
     }
 
-    _CheckboxFeature.prototype.init = function(domBinding) {
+    _CheckboxFeature.prototype.init = function(domBinding, force) {
       var feature;
+      _CheckboxFeature.__super__.init.call(this, domBinding, force);
+      if (!this.prepared) {
+        return;
+      }
       feature = this;
       domBinding.$dom.on("click", function() {
         feature.writeBack(domBinding, this.checked);
       });
-      _CheckboxFeature.__super__.init.call(this);
     };
 
     _CheckboxFeature.prototype._doRender = function(domBinding, value) {
@@ -10622,7 +10689,11 @@
       return _RadioFeature.__super__.constructor.apply(this, arguments);
     }
 
-    _RadioFeature.prototype.init = function(domBinding) {
+    _RadioFeature.prototype.init = function(domBinding, force) {
+      _RadioFeature.__super__.init.call(this, domBinding, force);
+      if (!this.prepared) {
+        return;
+      }
       domBinding.$dom.on("click", function() {
         var checked;
         checked = this.checked;
@@ -10630,7 +10701,6 @@
           this.writeBack(domBinding, checked);
         }
       });
-      _RadioFeature.__super__.init.call(this);
     };
 
     _RadioFeature.prototype._doRender = function(domBinding, value) {
@@ -10648,14 +10718,17 @@
       return _SelectFeature.__super__.constructor.apply(this, arguments);
     }
 
-    _SelectFeature.prototype.init = function(domBinding) {
+    _SelectFeature.prototype.init = function(domBinding, force) {
       var feature;
+      _SelectFeature.__super__.init.call(this, domBinding, force);
+      if (!this.prepared) {
+        return;
+      }
       feature = this;
       domBinding.$dom.on("change", function() {
         value = this.options[this.selectedIndex];
         feature.writeBack(domBinding, value != null ? value.value : void 0);
       });
-      _SelectFeature.__super__.init.call(this);
     };
 
     _SelectFeature.prototype._doRender = function(domBinding, value) {
@@ -10726,9 +10799,11 @@
   };
 
   cola._DomBinding = (function() {
-    function _DomBinding(dom, scope1, features) {
+    function _DomBinding(dom, scope1, features, forceInit1, clone) {
       var f, l, len1;
       this.scope = scope1;
+      this.forceInit = forceInit1;
+      this.forceInit = true;
       this.dom = dom;
       this.$dom = $(dom);
       if (features) {
@@ -10737,7 +10812,9 @@
           this.addFeature(f);
         }
       }
-      cola.util.userData(dom, cola.constants.DOM_BINDING_KEY, this);
+      if (!clone) {
+        cola.util.userData(dom, cola.constants.DOM_BINDING_KEY, this);
+      }
       cola.util.onNodeDispose(dom, _destroyDomBinding);
     }
 
@@ -10755,13 +10832,11 @@
       delete this.$dom;
     };
 
-    _DomBinding.prototype.addFeature = function(feature) {
+    _DomBinding.prototype.addFeature = function(feature, forceInit) {
       if (feature.id == null) {
         feature.id = cola.uniqueId();
       }
-      if (typeof feature.init === "function") {
-        feature.init(this);
-      }
+      feature.init(this, forceInit || this.forceInit);
       if (!this.features) {
         this.features = [feature];
       } else {
@@ -10802,9 +10877,6 @@
 
     _DomBinding.prototype.unbindFeature = function(feature) {
       var l, len1, path, paths;
-      if (!feature.processMessage) {
-        return;
-      }
       paths = feature.paths;
       if (paths) {
         for (l = 0, len1 = paths.length; l < len1; l++) {
@@ -10871,7 +10943,20 @@
     };
 
     _DomBinding.prototype.clone = function(dom, scope) {
-      return new this.constructor(dom, scope, this.features, true);
+      var domBinding, feature, l, len1, ref;
+      domBinding = new this.constructor(dom, scope, this.features, this.forceInit, true);
+      if (this.features) {
+        ref = this.features;
+        for (l = 0, len1 = ref.length; l < len1; l++) {
+          feature = ref[l];
+          if (!feature.prepared && feature.compile) {
+            domBinding.removeFeature(feature);
+            feature = feature.clone();
+            domBinding.addFeature(feature, true);
+          }
+        }
+      }
+      return domBinding;
     };
 
     return _DomBinding;
@@ -10899,11 +10984,12 @@
   cola._RepeatDomBinding = (function(superClass) {
     extend(_RepeatDomBinding, superClass);
 
-    function _RepeatDomBinding(dom, scope, feature, clone) {
+    function _RepeatDomBinding(dom, scope, feature, forceInit, clone) {
       var f, headerNode, l, len1, repeatItemDomBinding;
       if (clone) {
-        _RepeatDomBinding.__super__.constructor.call(this, dom, scope, feature);
+        _RepeatDomBinding.__super__.constructor.call(this, dom, scope, feature, forceInit, clone);
       } else {
+        this.forceInit = forceInit;
         this.scope = scope;
         headerNode = document.createComment("Repeat Head ");
         cola._ignoreNodeRemoved = true;
@@ -11151,9 +11237,9 @@
         documentFragment = document.createDocumentFragment();
         div = document.createElement("div");
         div.innerHTML = template;
-        child = div.firstChild;
+        child = div.firstElementChild;
         while (child) {
-          next = child.nextSibling;
+          next = child.nextElementSibling;
           documentFragment.appendChild(child);
           child = next;
         }
@@ -11220,16 +11306,16 @@
     }
     if (dom.nodeType === 3) {
       bindingExpr = dom.nodeValue;
-      parts = cola._compileText(bindingExpr);
+      parts = cola._compileText(scope, bindingExpr);
       if (parts != null ? parts.length : void 0) {
         buildContent(parts, dom, scope);
       }
       return dom;
     } else if (dom.nodeType === 11) {
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         child = _doRenderDomTemplate(child, scope, context) || child;
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
       return dom;
     }
@@ -11240,7 +11326,7 @@
     if (bindingExpr) {
       bindingExpr = bindingExpr.replace(ALIAS_REGEXP, context.defaultPath);
       bindingType = "repeat";
-      feature = cola._domFeatureBuilder[bindingType](bindingExpr, bindingType, dom);
+      feature = cola._domFeatureBuilder[bindingType](scope, bindingExpr, bindingType, dom);
       if (features == null) {
         features = [];
       }
@@ -11251,7 +11337,7 @@
       if (bindingExpr) {
         bindingExpr = bindingExpr.replace(ALIAS_REGEXP, context.defaultPath);
         bindingType = "alias";
-        feature = cola._domFeatureBuilder[bindingType](bindingExpr, bindingType, dom);
+        feature = cola._domFeatureBuilder[bindingType](scope, bindingExpr, bindingType, dom);
         if (features == null) {
           features = [];
         }
@@ -11310,10 +11396,10 @@
             }
           } else {
             if (attrName.indexOf("on") === 0) {
-              feature = cola._domFeatureBuilder.event(attrValue, attrName, dom);
+              feature = cola._domFeatureBuilder.event(scope, attrValue, attrName, dom);
             } else {
               builder = cola._domFeatureBuilder.hasOwnProperty(attrName) && cola._domFeatureBuilder[attrName];
-              feature = (builder || cola._domFeatureBuilder["$"]).call(cola._domFeatureBuilder, attrValue, attrName, dom);
+              feature = (builder || cola._domFeatureBuilder["$"]).call(cola._domFeatureBuilder, scope, attrValue, attrName, dom);
             }
             if (feature) {
               if (features == null) {
@@ -11339,7 +11425,7 @@
       }
     }
     if (features != null ? features.length : void 0) {
-      domBinding = cola._domBindingBuilder[bindingType || "$"](dom, scope, features);
+      domBinding = cola._domBindingBuilder[bindingType || "$"](dom, scope, features, context);
       if (scope.data.alias) {
         defaultPath = scope.data.alias;
       }
@@ -11375,10 +11461,10 @@
           customDomCompiler(scope, dom, context, childContext);
         }
       }
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         child = _doRenderDomTemplate(child, scope, childContext) || child;
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
       if (cola._userDomCompiler.$endContent.length) {
         ref3 = cola._userDomCompiler.$endContent;
@@ -11435,80 +11521,68 @@
   };
 
   cola._domBindingBuilder = {
-    $: function(dom, scope, features) {
-      return new cola._DomBinding(dom, scope, features);
+    $: function(dom, scope, features, context) {
+      var forceInit;
+      forceInit = !(context != null ? context.inRepeatTemplate : void 0);
+      return new cola._DomBinding(dom, scope, features, forceInit);
     },
-    repeat: function(dom, scope, features) {
-      var domBinding;
-      domBinding = new cola._RepeatDomBinding(dom, scope, features);
+    repeat: function(dom, scope, features, context) {
+      var domBinding, forceInit;
+      forceInit = !(context != null ? context.inRepeatTemplate : void 0);
+      domBinding = new cola._RepeatDomBinding(dom, scope, features, forceInit);
       scope = domBinding.scope;
       return domBinding;
     },
-    alias: function(dom, scope, features) {
-      var domBinding;
-      domBinding = new cola._AliasDomBinding(dom, scope, features);
+    alias: function(dom, scope, features, context) {
+      var domBinding, forceInit;
+      forceInit = !(context != null ? context.inRepeatTemplate : void 0);
+      domBinding = new cola._AliasDomBinding(dom, scope, features, forceInit);
       scope = domBinding.scope;
       return domBinding;
     }
   };
 
   cola._domFeatureBuilder = {
-    $: function(attrValue, attrName, dom) {
-      var expression, feature;
-      expression = cola._compileExpression(attrValue);
-      if (expression) {
-        if (attrName === "display") {
-          feature = new cola._DisplayFeature(expression);
-        } else if (attrName === "options" && dom.nodeName === "SELECT") {
-          feature = new cola._SelectOptionsFeature(expression);
-        } else {
-          feature = new cola._DomAttrFeature(expression, attrName);
-        }
+    $: function(scope, attrValue, attrName, dom) {
+      var feature;
+      if (attrName === "display") {
+        feature = new cola._DisplayFeature(attrValue);
+      } else if (attrName === "options" && dom.nodeName === "SELECT") {
+        feature = new cola._SelectOptionsFeature(attrValue);
+      } else {
+        feature = new cola._DomAttrFeature(attrValue, attrName);
       }
       return feature;
     },
-    repeat: function(attrValue) {
-      var expression;
-      expression = cola._compileExpression(attrValue, "repeat");
-      if (expression) {
-        return new cola._RepeatFeature(expression);
-      } else {
-
-      }
+    repeat: function(scope, attrValue) {
+      return new cola._RepeatFeature(attrValue, "repeat");
     },
-    alias: function(attrValue) {
-      var expression;
-      expression = cola._compileExpression(attrValue, "alias");
-      if (expression) {
-        return new cola._AliasFeature(expression);
-      } else {
-
-      }
+    alias: function(scope, attrValue) {
+      return new cola._AliasFeature(attrValue, "alias");
     },
-    bind: function(attrValue, attrName, dom) {
-      var expression, feature, nodeName, type;
-      expression = cola._compileExpression(attrValue);
+    bind: function(scope, attrValue, attrName, dom) {
+      var feature, nodeName, type;
       nodeName = dom.nodeName;
       if (nodeName === "INPUT") {
         type = dom.type;
         if (type === "checkbox") {
-          feature = new cola._CheckboxFeature(expression);
+          feature = new cola._CheckboxFeature(attrValue);
         } else if (type === "radio") {
-          feature = new cola._RadioFeature(expression);
+          feature = new cola._RadioFeature(attrValue);
         } else {
-          feature = new cola._TextBoxFeature(expression);
+          feature = new cola._TextBoxFeature(attrValue);
         }
       } else if (nodeName === "SELECT") {
-        feature = new cola._SelectFeature(expression);
+        feature = new cola._SelectFeature(attrValue);
       } else if (nodeName === "TEXTAREA") {
-        feature = new cola._TextBoxFeature(expression);
+        feature = new cola._TextBoxFeature(attrValue);
       } else {
-        feature = new cola._DomAttrFeature(expression, "text");
+        feature = new cola._DomAttrFeature(attrValue, "text");
       }
       return feature;
     },
-    style: function(attrValue) {
-      var expression, feature, features, style, styleExpr, styleProp;
+    style: function(scope, attrValue) {
+      var feature, features, style, styleExpr, styleProp;
       if (!attrValue) {
         return false;
       }
@@ -11516,35 +11590,32 @@
       features = [];
       for (styleProp in style) {
         styleExpr = style[styleProp];
-        expression = cola._compileExpression(styleExpr);
-        if (expression) {
-          feature = new cola._DomStylePropFeature(expression, styleProp);
+        if (styleExpr) {
+          feature = new cola._DomStylePropFeature(styleExpr, styleProp);
           features.push(feature);
         }
       }
       return features;
     },
-    classname: function(attrValue) {
-      var classConfig, classExpr, className, expression, feature, features;
+    classname: function(scope, attrValue) {
+      var classConfig, classExpr, className, feature, features;
       if (!attrValue) {
         return false;
       }
       features = [];
       try {
-        expression = cola._compileExpression(attrValue);
-        if (expression) {
-          feature = new cola._DomClassFeature(expression);
-          features.push(feature);
-        }
+        cola._compileExpression(scope, attrValue);
+        feature = new cola._DomClassFeature(attrValue);
+        features.push(feature);
       } catch (_error) {
+
+      }
+      if (!features.length) {
         classConfig = cola.util.parseStyleLikeString(attrValue);
         for (className in classConfig) {
           classExpr = classConfig[className];
-          expression = cola._compileExpression(classExpr);
-          if (expression) {
-            feature = new cola._DomToggleClassFeature(expression, className);
-            features.push(feature);
-          }
+          feature = new cola._DomToggleClassFeature(classExpr, className);
+          features.push(feature);
         }
       }
       return features;
@@ -11552,13 +11623,13 @@
     "class": function() {
       return this.classname.apply(this, arguments);
     },
-    resource: function(attrValue, attrName, dom) {
+    resource: function(scope, attrValue, attrName, dom) {
       attrValue = cola.util.trim(attrValue);
       if (attrValue) {
         $fly(dom).text(cola.resource(attrValue));
       }
     },
-    watch: function(attrValue) {
+    watch: function(scope, attrValue) {
       var action, feature, i, l, len1, path, pathStr, paths, ref;
       i = attrValue.indexOf(" on ");
       if (i > 0) {
@@ -11584,13 +11655,8 @@
       }
       return feature;
     },
-    event: function(attrValue, attrName) {
-      var expression, feature;
-      expression = cola._compileExpression(attrValue);
-      if (expression) {
-        feature = new cola._EventFeature(expression, attrName.substring(2));
-      }
-      return feature;
+    event: function(scope, attrValue, attrName) {
+      return new cola._EventFeature(attrValue, attrName.substring(2));
     }
   };
 
@@ -11901,7 +11967,7 @@
     return widgetConfig;
   };
 
-  _compileWidgetDom = function(dom, widgetType, config, context) {
+  _compileWidgetDom = function(scope, dom, widgetType, config, context) {
     var attr, attrName, attrValue, isEvent, l, len1, len2, o, prop, ref, removeAttrs;
     if (config == null) {
       config = {};
@@ -11925,7 +11991,7 @@
           if (prop === "bind") {
             config[prop] = attrValue;
           } else {
-            config[prop] = cola._compileExpression(attrValue);
+            config[prop] = cola._compileExpression(scope, attrValue);
           }
           if (removeAttrs == null) {
             removeAttrs = [];
@@ -11940,7 +12006,7 @@
             }
           }
           if (isEvent) {
-            config[prop] = cola._compileExpression(attr.value);
+            config[prop] = cola._compileExpression(scope, attr.value);
             if (removeAttrs == null) {
               removeAttrs = [];
             }
@@ -12067,7 +12133,7 @@
           widgetType = WIDGET_TAGS_REGISTRY[tagName];
         }
         if (widgetType) {
-          config = _compileWidgetDom(dom, widgetType, config, context);
+          config = _compileWidgetDom(scope, dom, widgetType, config, context);
         }
       }
     }
@@ -13180,9 +13246,7 @@
     WidgetDataModel.prototype.get = function(path, loadMode, context) {
       var cc, ref;
       cc = path.charCodeAt(0);
-      if (cc === 36) {
-        return void 0;
-      } else if (cc === 64) {
+      if (cc === 64) {
         return (ref = this.model.parent) != null ? ref.data.get(this._getRealPath(path), loadMode, context) : void 0;
       } else {
         return this.widget.get(path, true);
@@ -13357,6 +13421,7 @@
     }
 
     WidgetModel.prototype._getAction = function(name) {
+      debugger;
       var fn, method, ref;
       method = this.widget[name];
       if (method instanceof Function) {
@@ -13589,7 +13654,7 @@ Template
       this._bind = bindStr;
       if (bindStr && this._scope) {
         this._bindInfo = bindInfo = {};
-        bindInfo.expression = expression = cola._compileExpression(bindStr);
+        bindInfo.expression = expression = cola._compileExpression(this._scope, bindStr);
         bindInfo.writeable = expression.writeable;
         if (expression.repeat || expression.setAlias) {
           throw new cola.Exception("Expression \"" + bindStr + "\" must be a simple expression.");
@@ -13637,7 +13702,7 @@ Template
           };
         }
         paths = expression.paths;
-        bindInfo.watchingMoreMessage = !paths && expression.hasCallStatement && !expression.hasDefinedPath;
+        bindInfo.watchingMoreMessage = !paths && expression.hasComplexStatement && !expression.hasDefinedPath;
         if (paths) {
           this._watchingPaths = watchingPaths = [];
           for (i = o = 0, len2 = paths.length; o < len2; i = ++o) {
@@ -13709,15 +13774,14 @@ Template
       }
       this._bind = bindStr;
       this._itemsRetrieved = false;
-      delete this._simpleBindPath;
       if (bindStr) {
-        expression = cola._compileExpression(bindStr, "repeat");
+        expression = cola._compileExpression(this._scope, bindStr, "repeat");
         if (!expression.repeat) {
           throw new cola.Exception("Expression \"" + bindStr + "\" must be a repeat expression.");
         }
         this._alias = expression.alias;
-        if ((expression.type === "MemberExpression" || expression.type === "Identifier") && !expression.hasCallStatement && !expression.hasDefinedPath) {
-          this._simpleBindPath = expression.paths[0];
+        if (expression.writeable) {
+          this._simpleBindPath = expression.writeablePath;
         }
       }
       this._itemsScope.setExpression(expression);
@@ -13955,7 +14019,7 @@ Template
       if (this._content == null) {
         this._content = [];
       }
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           widget = cola.widget(child);
@@ -13963,7 +14027,7 @@ Template
             this._content.push(widget);
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
     };
 
@@ -17841,7 +17905,7 @@ Template
       if (this._doms == null) {
         this._doms = {};
       }
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       results = [];
       while (child) {
         if (child.nodeType === 1) {
@@ -17864,7 +17928,7 @@ Template
             }
           }
         }
-        results.push(child = child.nextSibling);
+        results.push(child = child.nextElementSibling);
       }
       return results;
     };
@@ -18644,17 +18708,17 @@ Template
       _parseChild = (function(_this) {
         return function(node, target) {
           var childNode, widget;
-          childNode = node.firstChild;
+          childNode = node.firstElementChild;
           while (childNode) {
             if (childNode.nodeType === 1) {
               widget = cola.widget(childNode);
               _this._addContentElement(widget || childNode, target);
             }
-            childNode = childNode.nextSibling;
+            childNode = childNode.nextElementSibling;
           }
         };
       })(this);
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           if (child.nodeName === "I") {
@@ -18676,7 +18740,7 @@ Template
             }
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
     };
 
@@ -19584,7 +19648,7 @@ Template
 
     AbstractTabButton.prototype._parseDom = function(dom) {
       var child, parseCaption, tabItem;
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       tabItem = this;
       if (this._doms == null) {
         this._doms = {};
@@ -19592,7 +19656,7 @@ Template
       parseCaption = (function(_this) {
         return function(node) {
           var childNode;
-          childNode = node.firstChild;
+          childNode = node.firstElementChild;
           while (childNode) {
             if (childNode.nodeType === 1) {
               if (childNode.nodeName === "SPAN") {
@@ -19608,7 +19672,7 @@ Template
                 }
               }
             }
-            childNode = childNode.nextSibling;
+            childNode = childNode.nextElementSibling;
           }
         };
       })(this);
@@ -19625,7 +19689,7 @@ Template
             });
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
     };
 
@@ -19984,17 +20048,17 @@ Template
       _parseChild = (function(_this) {
         return function(node, target) {
           var childNode, widget;
-          childNode = node.firstChild;
+          childNode = node.firstElementChild;
           while (childNode) {
             if (childNode.nodeType === 1) {
               widget = cola.widget(childNode);
               _this._addContentElement(widget || childNode, target);
             }
-            childNode = childNode.nextSibling;
+            childNode = childNode.nextElementSibling;
           }
         };
       })(this);
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           if (child.nodeName === "TEMPLATE") {
@@ -20010,7 +20074,7 @@ Template
             break;
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
     };
 
@@ -20676,7 +20740,7 @@ Template
       if (this._$dom == null) {
         this._$dom = $(dom);
       }
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           if (child.nodeName === "LABEL") {
@@ -20694,7 +20758,7 @@ Template
             this._doms.input = child;
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
       if (!this._doms.label && !this._doms.input) {
         this._$dom.append($.xCreate([
@@ -25228,9 +25292,9 @@ Template
       if (this._doms == null) {
         this._doms = {};
       }
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
-        next = child.nextSibling;
+        next = child.nextElementSibling;
         nodeName = child.nodeName;
         if (!itemsWrapper && nodeName === "UL") {
           itemsWrapper = child;
@@ -25414,12 +25478,12 @@ Template
 
     ItemsView.prototype._getFirstItemDom = function() {
       var itemDom;
-      itemDom = this._doms.itemsWrapper.firstChild;
+      itemDom = this._doms.itemsWrapper.firstElementChild;
       while (itemDom) {
         if (itemDom._itemType) {
           return itemDom;
         }
-        itemDom = itemDom.nextSibling;
+        itemDom = itemDom.nextElementSibling;
       }
     };
 
@@ -25445,7 +25509,7 @@ Template
 
     ItemsView.prototype._getNextItemDom = function(itemDom) {
       while (itemDom) {
-        itemDom = itemDom.nextSibling;
+        itemDom = itemDom.nextElementSibling;
         if (itemDom != null ? itemDom._itemType : void 0) {
           return itemDom;
         }
@@ -25488,7 +25552,7 @@ Template
       }
       this._realItems = items;
       documentFragment = null;
-      nextItemDom = itemsWrapper.firstChild;
+      nextItemDom = itemsWrapper.firstElementChild;
       currentItem = items != null ? items.current : void 0;
       if (this._currentItemDom) {
         if (!currentItem) {
@@ -25514,7 +25578,7 @@ Template
                 if (nextItemDom._itemType === itemType) {
                   break;
                 } else {
-                  _nextItemDom = nextItemDom.nextSibling;
+                  _nextItemDom = nextItemDom.nextElementSibling;
                   if (!cola.util.hasClass(nextItemDom, "protected")) {
                     itemsWrapper.removeChild(nextItemDom);
                   }
@@ -25523,7 +25587,7 @@ Template
               }
               itemDom = nextItemDom;
               if (nextItemDom) {
-                nextItemDom = nextItemDom.nextSibling;
+                nextItemDom = nextItemDom.nextElementSibling;
               }
             } else {
               itemDom = null;
@@ -25546,7 +25610,7 @@ Template
       if (nextItemDom) {
         itemDom = nextItemDom;
         while (itemDom) {
-          nextItemDom = itemDom.nextSibling;
+          nextItemDom = itemDom.nextElementSibling;
           if (!cola.util.hasClass(itemDom, "protected")) {
             itemsWrapper.removeChild(itemDom);
             if (itemDom._itemId) {
@@ -25948,7 +26012,7 @@ Template
       parseItem = (function(_this) {
         return function(node) {
           var childNode;
-          childNode = node.firstChild;
+          childNode = node.firstElementChild;
           while (childNode) {
             if (childNode.nodeType === 1) {
               if (!_this._items) {
@@ -25956,12 +26020,12 @@ Template
               }
               _this.addItem(childNode);
             }
-            childNode = childNode.nextSibling;
+            childNode = childNode.nextElementSibling;
           }
         };
       })(this);
       doms = this._doms;
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           if (cola.util.hasClass(child, "items-wrap")) {
@@ -25973,7 +26037,7 @@ Template
             this.regTemplate(child);
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
       if (doms.indicators) {
         this.refreshIndicators();
@@ -26333,7 +26397,7 @@ Template
       parseRightMenu = (function(_this) {
         return function(node) {
           var childNode, menuItem;
-          childNode = node.firstChild;
+          childNode = node.firstElementChild;
           if (_this._rightItems == null) {
             _this._rightItems = [];
           }
@@ -26349,11 +26413,11 @@ Template
                 _this.addRightItem(menuItem);
               }
             }
-            childNode = childNode.nextSibling;
+            childNode = childNode.nextElementSibling;
           }
         };
       })(this);
-      childNode = node.firstChild;
+      childNode = node.firstElementChild;
       results = [];
       while (childNode) {
         if (childNode.nodeType === 1) {
@@ -26370,7 +26434,7 @@ Template
             this.addItem(menuItem);
           }
         }
-        results.push(childNode = childNode.nextSibling);
+        results.push(childNode = childNode.nextElementSibling);
       }
       return results;
     };
@@ -26844,7 +26908,7 @@ Template
 
     MenuItem.prototype._parseDom = function(dom) {
       var child, subMenu;
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       if (this._doms == null) {
         this._doms = {};
       }
@@ -26863,7 +26927,7 @@ Template
             this._doms.captionDom = child;
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
       if (!this._doms.captionDom) {
         this._doms.captionDom = $.xCreate({
@@ -27101,7 +27165,7 @@ Template
 
     TitleBar.prototype._parseDom = function(dom) {
       var child, firstChild;
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       if (this._doms == null) {
         this._doms = {};
       }
@@ -27115,11 +27179,11 @@ Template
             break;
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
       TitleBar.__super__._parseDom.call(this, dom);
-      firstChild = dom.children[0];
-      if (this._doms.title && firstChild !== this._doms.title) {
+      firstChild = dom.firstChild;
+      if (this._doms.title && dom.firstChild !== this._doms.title) {
         $(this._doms.title).remove();
         $(firstChild).before(this._doms.title);
       }
@@ -27231,7 +27295,7 @@ Template
 
     MenuButton.prototype._parseDom = function(dom) {
       var child, menu;
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           menu = cola.widget(child);
@@ -27241,7 +27305,7 @@ Template
             break;
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
     };
 
@@ -27395,13 +27459,13 @@ Template
         return function(node) {
           var childNode;
           _this._items = [];
-          childNode = node.firstChild;
+          childNode = node.firstElementChild;
           while (childNode) {
             if (childNode.nodeType === 1) {
               _this.addItem(childNode);
             }
             $fly(childNode).addClass("side");
-            childNode = childNode.nextSibling;
+            childNode = childNode.nextElementSibling;
           }
         };
       })(this);
@@ -27409,7 +27473,7 @@ Template
         this._doms = {};
       }
       doms = this._doms;
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           if (cola.util.hasClass(child, "sides")) {
@@ -27419,7 +27483,7 @@ Template
             this.regTemplate(child);
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
     };
 
@@ -27604,7 +27668,7 @@ Template
       if (this._steps == null) {
         this._steps = [];
       }
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           step = cola.widget(child);
@@ -27612,7 +27676,7 @@ Template
             this.addStep(step);
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
     };
 
@@ -27888,7 +27952,7 @@ Template
           }
         };
       })(this);
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeType === 1) {
           if (child.nodeName === "I") {
@@ -27924,7 +27988,7 @@ Template
             }
           }
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
       parseContent(dom);
     };
@@ -28073,7 +28137,7 @@ Template
         return function(node) {
           var childNode;
           _this._items = [];
-          childNode = node.firstChild;
+          childNode = node.firstElementChild;
           while (childNode) {
             if (childNode.nodeType === 1) {
               if ($fly(childNode).hasClass("prev")) {
@@ -28084,12 +28148,12 @@ Template
                 _this._doms.nextItem = childNode;
               }
             }
-            childNode = childNode.nextSibling;
+            childNode = childNode.nextElementSibling;
           }
         };
       })(this);
       doms = this._doms;
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       results = [];
       while (child) {
         if (child.nodeType === 1) {
@@ -28098,7 +28162,7 @@ Template
             parseItem(child);
           }
         }
-        results.push(child = child.nextSibling);
+        results.push(child = child.nextElementSibling);
       }
       return results;
     };
@@ -29219,17 +29283,17 @@ Template
       }
       if (!groupDom._headerCreated) {
         groupDom._headerCreated = true;
-        itemsWrapper = groupDom.firstChild;
+        itemsWrapper = groupDom.firstElementChild;
         groupHeaderDom = this._createNewItem("group-header", group);
         this._templateContext.defaultPath = group._alias;
         cola.xRender(groupHeaderDom, groupScope, this._templateContext);
         groupDom.insertBefore(groupHeaderDom, itemsWrapper);
         cola.util.userData(groupHeaderDom, "item", group);
       } else {
-        itemsWrapper = groupDom.lastChild;
+        itemsWrapper = groupDom.lastElementChild;
       }
       documentFragment = null;
-      currentItemDom = itemsWrapper.firstChild;
+      currentItemDom = itemsWrapper.firstElementChild;
       ref = group.items;
       for (n = 0, len1 = ref.length; n < len1; n++) {
         item = ref[n];
@@ -29240,14 +29304,14 @@ Template
             if (currentItemDom._itemType === itemType) {
               break;
             } else {
-              nextItemDom = currentItemDom.nextSibling;
+              nextItemDom = currentItemDom.nextElementSibling;
               groupDom.removeChild(currentItemDom);
               currentItemDom = nextItemDom;
             }
           }
           if (currentItemDom) {
             itemDom = currentItemDom;
-            currentItemDom = currentItemDom.nextSibling;
+            currentItemDom = currentItemDom.nextElementSibling;
           }
         }
         if (itemDom) {
@@ -29264,7 +29328,7 @@ Template
       if (currentItemDom) {
         itemDom = currentItemDom;
         while (itemDom) {
-          nextItemDom = itemDom.nextSibling;
+          nextItemDom = itemDom.nextElementSibling;
           itemsWrapper.removeChild(itemDom);
           if (itemDom._itemId) {
             delete this._itemDomMap[itemDom._itemId];
@@ -29322,7 +29386,7 @@ Template
         group = cola.util.userData(topGroupDom, "item");
         floatGroupHeader = this._getFloatGroupHeader(group);
         gap = 1;
-        nextOffsetTop = (ref2 = topGroupDom.nextSibling) != null ? ref2.offsetTop : void 0;
+        nextOffsetTop = (ref2 = topGroupDom.nextElementSibling) != null ? ref2.offsetTop : void 0;
         if (nextOffsetTop > 0 && nextOffsetTop - scrollTop - gap < this._floatGroupHeaderHeight) {
           offset = this._floatGroupHeaderHeight - (nextOffsetTop - scrollTop - gap);
           floatGroupHeader.style.top = (this._floatGroupHeaderDefaultTop - offset) + "px";
@@ -29355,7 +29419,7 @@ Template
         this._floatGroupHeaderHeight = floatGroupHeaderWrapper.offsetHeight;
         floatGroupHeaderWrapper.style.top = this._floatGroupHeaderDefaultTop + "px";
       } else {
-        floatGroupHeader = floatGroupHeaderWrapper.firstChild;
+        floatGroupHeader = floatGroupHeaderWrapper.firstElementChild;
         groupScope = cola.util.userData(floatGroupHeader, "scope");
         groupScope.data.setTargetData(group);
         if (floatGroupHeaderWrapper.style.display === "none") {
@@ -29371,10 +29435,10 @@ Template
       if (!(groups != null ? groups.length : void 0)) {
         return;
       }
-      currentGroupDom = this._topGroupDom || this._doms.itemsWrapper.firstChild;
+      currentGroupDom = this._topGroupDom || this._doms.itemsWrapper.firstElementChild;
       currentGroupDomTop = currentGroupDom.offsetTop;
       if (currentGroupDomTop <= scrollTop) {
-        groupDom = currentGroupDom.nextSibling;
+        groupDom = currentGroupDom.nextElementSibling;
         while (groupDom) {
           groupDomOffsetTop = groupDom.offsetTop;
           if (groupDomOffsetTop > scrollTop) {
@@ -29384,7 +29448,7 @@ Template
             }
             break;
           }
-          groupDom = groupDom.nextSibling;
+          groupDom = groupDom.nextElementSibling;
         }
       } else {
         groupDom = currentGroupDom.previousSibling;
@@ -29522,13 +29586,13 @@ Template
         $fly(indexBar).show();
       }
       documentFragment = null;
-      currentItemDom = indexBar.firstChild;
+      currentItemDom = indexBar.firstElementChild;
       groups = this._realItems;
       for (i = n = 0, len1 = groups.length; n < len1; i = ++n) {
         group = groups[i];
         if (currentItemDom) {
           itemDom = currentItemDom;
-          currentItemDom = currentItemDom.nextSibling;
+          currentItemDom = currentItemDom.nextElementSibling;
         } else {
           itemDom = $.xCreate({
             tagName: "div",
@@ -29540,14 +29604,14 @@ Template
           }
           documentFragment.appendChild(itemDom);
         }
-        $fly(itemDom.firstChild).text(group.name);
+        $fly(itemDom.firstElementChild).text(group.name);
         itemDom._groupIndex = i;
       }
       if (documentFragment) {
         indexBar.appendChild(documentFragment);
       } else {
         while (currentItemDom) {
-          nextDom = currentItemDom.nextSibling;
+          nextDom = currentItemDom.nextElementSibling;
           indexBar.removeChild(currentItemDom);
           currentItemDom = nextDom;
         }
@@ -29740,8 +29804,8 @@ Template
         direction = "left";
         factor = -1;
       }
-      if (itemDom.firstChild && itemDom.firstChild === itemDom.lastChild) {
-        slideDom = itemDom.firstChild;
+      if (itemDom.firstElementChild && itemDom.firstElementChild === itemDom.lastChild) {
+        slideDom = itemDom.firstElementChild;
       } else {
         slideDom = itemDom;
       }
@@ -29812,8 +29876,8 @@ Template
           item: cola.util.userData(itemDom, "item")
         });
       }
-      if (itemDom.firstChild && itemDom.firstChild === itemDom.lastChild) {
-        slideDom = itemDom.firstChild;
+      if (itemDom.firstElementChild && itemDom.firstElementChild === itemDom.lastChild) {
+        slideDom = itemDom.firstElementChild;
       } else {
         slideDom = itemDom;
       }
@@ -29881,8 +29945,8 @@ Template
       slidePane = this._itemSlidePane;
       direction = this._itemSlideDirection;
       if (direction === "right") {
-        if (itemDom.firstChild && itemDom.firstChild === itemDom.lastChild) {
-          slideDom = itemDom.firstChild;
+        if (itemDom.firstElementChild && itemDom.firstElementChild === itemDom.lastChild) {
+          slideDom = itemDom.firstElementChild;
         } else {
           slideDom = itemDom;
         }
@@ -29960,7 +30024,7 @@ Template
     CascadeBind.attributes = {
       expression: {
         setter: function(expression) {
-          expression = cola._compileExpression(expression, "repeat");
+          expression = cola._compileExpression(this._scope, expression, "repeat");
           if (expression) {
             if (!expression.repeat) {
               throw new cola.Exception("\"" + bindStr + "\" is not a repeat expression.");
@@ -30535,12 +30599,12 @@ Template
       if (!dom) {
         return;
       }
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
         if (child.nodeName === "TEMPLATE") {
           this.regTemplate(child);
         }
-        child = child.nextSibling;
+        child = child.nextElementSibling;
       }
     };
 
@@ -31178,7 +31242,7 @@ Template
       itemDom = this._cloneTemplate(template);
       $fly(itemDom).addClass("tree item " + itemType);
       itemDom._itemType = itemType;
-      nodeDom = itemDom.firstChild;
+      nodeDom = itemDom.firstElementChild;
       if (nodeDom && cola.util.hasClass(nodeDom, "node")) {
         template = this.getTemplate("node-" + itemType, "node");
         if (template) {
@@ -31255,7 +31319,7 @@ Template
         } else if (!this._lazyRenderChildNodes) {
           this._prepareChildNode(node, false);
         }
-        nodeDom = itemDom.firstChild;
+        nodeDom = itemDom.firstElementChild;
         $fly(nodeDom).toggleClass("leaf", node.get("hasChild") === false);
       }
       return nodeScope;
@@ -31280,7 +31344,7 @@ Template
       itemsScope = parentNode._itemsScope;
       itemsScope.resetItemScopeMap();
       documentFragment = null;
-      currentItemDom = nodesWrapper.firstChild;
+      currentItemDom = nodesWrapper.firstElementChild;
       if (parentNode._children) {
         ref = parentNode._children;
         for (n = 0, len1 = ref.length; n < len1; n++) {
@@ -31291,14 +31355,14 @@ Template
               if (currentItemDom._itemType === itemType) {
                 break;
               } else {
-                nextItemDom = currentItemDom.nextSibling;
+                nextItemDom = currentItemDom.nextElementSibling;
                 nodesWrapper.removeChild(currentItemDom);
                 currentItemDom = nextItemDom;
               }
             }
             itemDom = currentItemDom;
             if (currentItemDom) {
-              currentItemDom = currentItemDom.nextSibling;
+              currentItemDom = currentItemDom.nextElementSibling;
             }
           } else {
             itemDom = null;
@@ -31318,7 +31382,7 @@ Template
       if (currentItemDom) {
         itemDom = currentItemDom;
         while (itemDom) {
-          nextItemDom = itemDom.nextSibling;
+          nextItemDom = itemDom.nextElementSibling;
           if ($fly(itemDom).hasClass("item")) {
             nodesWrapper.removeChild(itemDom);
           }
@@ -31401,7 +31465,7 @@ Template
           return tree._onItemRemove(arg);
         };
       }
-      nodeDom = itemDom.firstChild;
+      nodeDom = itemDom.firstElementChild;
       if (expand) {
         $fly(nodeDom).addClass("expanding");
       }
@@ -31481,7 +31545,7 @@ Template
           parent = parent._parent;
         }
       }
-      $fly(itemDom.firstChild).removeClass("expanded");
+      $fly(itemDom.firstElementChild).removeClass("expanded");
       $nodesWrapper = $fly(itemDom.lastChild);
       if ($nodesWrapper.hasClass("child-nodes")) {
         if (noAnimation) {
@@ -31861,7 +31925,7 @@ Template
 
     TableSelectColumn.prototype.renderHeader = function(dom, item) {
       var checkbox;
-      if (!dom.firstChild) {
+      if (!dom.firstElementChild) {
         this._headerCheckbox = checkbox = new cola.Checkbox({
           "class": "in-cell",
           triState: true,
@@ -31895,7 +31959,7 @@ Template
 
     TableSelectColumn.prototype.renderCell = function(dom, item) {
       var checkbox;
-      if (!dom.firstChild) {
+      if (!dom.firstElementChild) {
         checkbox = new cola.Checkbox({
           "class": "in-cell",
           bind: this._table._alias + "." + this._table._selectedProperty,
@@ -32166,7 +32230,7 @@ Template
                 column._property = bind.substring(1);
               }
             } else {
-              info.expression = cola._compileExpression(bind);
+              info.expression = cola._compileExpression(this._scope, bind);
             }
           }
           if (column._width) {
@@ -32326,15 +32390,15 @@ Template
         attr = ref[n];
         attrName = attr.name;
         if (attrName.substring(0, 2) === "c-") {
-          expression = cola._compileExpression(attr.value);
+          expression = cola._compileExpression(this._scope, attr.value);
           column[attrName.substring(2)] = expression;
         } else {
           column[attrName] = attr.value;
         }
       }
-      child = dom.firstChild;
+      child = dom.firstElementChild;
       while (child) {
-        next = child.nextSibling;
+        next = child.nextElementSibling;
         nodeName = child.nodeName;
         if (nodeName === "TEMPLATE") {
           templateName = child.getAttribute("name");
@@ -32507,7 +32571,7 @@ Template
         this.set("columns", columnConfigs);
       }
       colgroup = this._doms.colgroup;
-      nextCol = colgroup.firstChild;
+      nextCol = colgroup.firstElementChild;
       ref1 = this._columnsInfo.dataColumns;
       for (i = o = 0, len2 = ref1.length; o < len2; i = ++o) {
         colInfo = ref1[i];
@@ -32516,7 +32580,7 @@ Template
           col = document.createElement("col");
           colgroup.appendChild(col);
         } else {
-          nextCol = col.nextSibling;
+          nextCol = col.nextElementSibling;
         }
         if (colInfo.widthType === "percent") {
           col.width = colInfo.width + "%";
@@ -32532,7 +32596,7 @@ Template
       }
       col = nextCol;
       while (col) {
-        nextCol = col.nextSibling;
+        nextCol = col.nextElementSibling;
         colgroup.removeChild(col);
         col = nextCol;
       }
@@ -32681,7 +32745,7 @@ Template
             cell.rowSpan = len - i;
             cell.colSpan = 1;
           }
-          contentWrapper = cell.firstChild;
+          contentWrapper = cell.firstElementChild;
           this._refreshHeaderCell(contentWrapper, colInfo, isNew);
         }
         while (row.lastChild && row.lastChild !== cell) {
@@ -32782,7 +32846,7 @@ Template
           cell._name = column._name;
           row.appendChild(cell);
         }
-        contentWrapper = cell.firstChild;
+        contentWrapper = cell.firstElementChild;
         this._refreshFooterCell(contentWrapper, colInfo, isNew);
       }
       while (row.lastChild !== cell) {
@@ -32864,7 +32928,7 @@ Template
             cell._name = column._name;
             itemDom.appendChild(cell);
           }
-          contentWrapper = cell.firstChild;
+          contentWrapper = cell.firstElementChild;
           this._refreshCell(contentWrapper, item, colInfo, itemScope, isNew);
         }
         while (itemDom.lastChild && itemDom.lastChild !== cell) {
@@ -32947,7 +33011,7 @@ Template
 
     Table.prototype._refreshFakeRow = function(row) {
       var cell, colInfo, i, len1, n, nextCell, ref;
-      nextCell = row.firstChild;
+      nextCell = row.firstElementChild;
       ref = this._columnsInfo.dataColumns;
       for (i = n = 0, len1 = ref.length; n < len1; i = ++n) {
         colInfo = ref[i];
@@ -32958,12 +33022,12 @@ Template
           });
           row.appendChild(cell);
         } else {
-          nextCell = nextCell.nextSibling;
+          nextCell = nextCell.nextElementSibling;
         }
       }
       while (nextCell) {
         cell = nextCell;
-        nextCell = nextCell.nextSibling;
+        nextCell = nextCell.nextElementSibling;
         row.removeChild(cell);
       }
     };
@@ -32988,7 +33052,7 @@ Template
             tagName: "tr"
           }
         });
-        this._refreshFakeRow(fakeThead.firstChild);
+        this._refreshFakeRow(fakeThead.firstElementChild);
       }
       return fixedHeaderWrapper;
     };
@@ -33013,30 +33077,30 @@ Template
             tagName: "tr"
           }
         });
-        this._refreshFakeRow(fakeTfoot.firstChild);
+        this._refreshFakeRow(fakeTfoot.firstElementChild);
       }
       return fixedFooterWrapper;
     };
 
     Table.prototype._refreshFixedColgroup = function(colgroup, fixedColgroup) {
       var col, fixedCol, nextCol, nextFixedCol;
-      nextCol = colgroup.firstChild;
-      nextFixedCol = fixedColgroup.firstChild;
+      nextCol = colgroup.firstElementChild;
+      nextFixedCol = fixedColgroup.firstElementChild;
       while (nextCol) {
         col = nextCol;
-        nextCol = nextCol.nextSibling;
+        nextCol = nextCol.nextElementSibling;
         fixedCol = nextFixedCol;
         if (!fixedCol) {
           fixedCol = document.createElement("col");
         } else {
-          nextFixedCol = nextFixedCol.nextSibling;
+          nextFixedCol = nextFixedCol.nextElementSibling;
         }
         fixedCol.width = col.width;
         fixedCol.valign = col.valign;
       }
       while (nextFixedCol) {
         fixedCol = nextFixedCol;
-        nextFixedCol = nextFixedCol.nextSibling;
+        nextFixedCol = nextFixedCol.nextElementSibling;
         fixedColgroup.removeChild(fixedCol);
       }
     };
@@ -33051,7 +33115,7 @@ Template
       } else {
         this._refreshFixedColgroup(colgroup, fixedHeaderColgroup);
       }
-      $fly(this._doms.fakeThead.firstChild).height(this._doms.thead.offsetHeight);
+      $fly(this._doms.fakeThead.firstElementChild).height(this._doms.thead.offsetHeight);
     };
 
     Table.prototype._setFixedFooterSize = function() {
@@ -33064,7 +33128,7 @@ Template
       } else {
         this._refreshFixedColgroup(colgroup, fixedFooterColgroup);
       }
-      $fly(this._doms.fakeTfoot.firstChild).height(this._doms.tfoot.offsetHeight);
+      $fly(this._doms.fakeTfoot.firstElementChild).height(this._doms.tfoot.offsetHeight);
     };
 
     Table.prototype._refreshFixedHeader = function() {
@@ -33510,7 +33574,7 @@ Template
       parseRightMenu = (function(_this) {
         return function(node) {
           var childNode, menuItem, pageCode;
-          childNode = node.firstChild;
+          childNode = node.firstElementChild;
           if (_this._rightItems == null) {
             _this._rightItems = [];
           }
@@ -33531,15 +33595,15 @@ Template
                 }
               }
             }
-            childNode = childNode.nextSibling;
+            childNode = childNode.nextElementSibling;
           }
         };
       })(this);
-      childNode = node.firstChild;
+      childNode = node.firstElementChild;
       results = [];
       while (childNode) {
         if (childNode._eachIgnore) {
-          childNode = childNode.nextSibling;
+          childNode = childNode.nextElementSibling;
           continue;
         }
         if (childNode.nodeType === 1) {
@@ -33561,7 +33625,7 @@ Template
             }
           }
         }
-        results.push(childNode = childNode.nextSibling);
+        results.push(childNode = childNode.nextElementSibling);
       }
       return results;
     };

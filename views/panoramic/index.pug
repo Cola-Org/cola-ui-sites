@@ -1,6 +1,7 @@
 extends ../.cola-page-pc
 append head
 	link(rel="stylesheet", type="text/css", href="./panoramic/index.css")
+	script(src="./resources/echarts/echarts.min.js")
 block body
 	include ../page-header
 
@@ -198,7 +199,23 @@ block body
 				item
 					c-panel.block.basic(caption="carousel 走马灯" height="510px")
 						.content
-							c-subview(url="/panoramic/carousel" jsUrl="$")
+							c-subview(url="/panoramic/carousel" jsUrl="$" cssUrl="$")
+				item
+					c-panel.block.basic.v-box(caption="Chart-雷达图(echarts)" height="510px")
+						.content.flex-box
+							c-subview(url="/panoramic/chart/radar" jsUrl="$" cssUrl="/panoramic/chart/chart.css")
+				item
+					c-panel.block.basic.v-box(caption="Chart-折线图(echarts)" height="510px")
+						.content.flex-box
+							c-subview(url="/panoramic/chart/line" jsUrl="$" cssUrl="/panoramic/chart/chart.css")
+				item
+					c-panel.block.basic.v-box(caption="Chart-柱状图(echarts)" height="510px")
+						.content.flex-box
+							c-subview(url="/panoramic/chart/bar" jsUrl="$" cssUrl="/panoramic/chart/chart.css")
+				item
+					c-panel.block.basic.v-box(caption="Chart-饼图(echarts)" height="510px")
+						.content.flex-box
+							c-subview(url="/panoramic/chart/pie" jsUrl="$" cssUrl="/panoramic/chart/chart.css")
 
 	include ../page-footer
 

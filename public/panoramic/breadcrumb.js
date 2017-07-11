@@ -8,6 +8,5 @@ cola(function(model){
 		itemClick: function (self, arg) {
 			model.get("sections").setCurrent(arg.item)
 		}
-	})
-
-})
+	});
+});
