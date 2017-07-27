@@ -234,6 +234,11 @@ module.exports = [
 				label: "列表控件",
 				api: "cola.ListView.html",
 				path: "/docs/listView"
+			},
+			{
+				name: "TagEditor",
+				label: "标签编辑器",
+				path: "/docs/tag-editor"
 			}
 		]
 	},
